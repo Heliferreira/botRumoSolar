@@ -16,6 +16,10 @@
           <th>ID</th>
           <th>Nome</th>
           <th>Mensagem</th>
+          <th>Valor da Conta</th>
+          <th>Consumo Estimado</th>
+          <th>Economia Mensal</th>
+          <th>Economia Anual</th>
           <th>Data</th>
         </tr>
       </thead>
@@ -24,7 +28,11 @@
           <tr>
             <td><%= lead.id %></td>
             <td><%= lead.nome %></td>
-            <td><%= lead.mensagem %></td>
+            <td><%= lead.mensagemOriginal %></td>
+            <td>R$ <%= lead.valorConta %></td>
+            <td><%= lead.consumoEstimado %> kWh</td>
+            <td>R$ <%= lead.economiaMensal %></td>
+            <td>R$ <%= lead.economiaAnual %></td>
             <td><%= lead.data %></td>
           </tr>
         <% }) %>
