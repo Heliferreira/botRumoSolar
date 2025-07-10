@@ -17,6 +17,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Permite o uso de JSON no corpo das requisições
 app.use(bodyParser.json());
 
+// Rota principal para evitar erro no Render
+app.get('/', (req, res) => {
+  res.render('dashboard'); // Certifique-se de que dashboard.ejs está no src/views
+});
+
 // Usa as rotas definidas no routes.js
 app.use(routes);
 
