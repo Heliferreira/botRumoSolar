@@ -2,25 +2,25 @@ require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
-const routes = require('./routes');
-const { getAllLeads } = require('./db');
+const routes = require('./src/routes');
+const { getAllLeads } = require('./src/db');
 
 const app = express();
 
 // View engine
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', path.join(__dirname, 'src', 'views'));
 
 // Arquivos estáticos
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'))); // Se tiver pasta public depois
 
 // Body parser
 app.use(bodyParser.json());
 
-// Rotas
+// Usa rotas (incluindo /webhook e /dashboard)
 app.use(routes);
 
-// Rota principal
+// Rota inicial redireciona pro dashboard
 app.get('/', async (req, res) => {
   try {
     const leads = await getAllLeads();
@@ -33,5 +33,5 @@ app.get('/', async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+  console.log(`✅ Servidor rodando na porta ${PORT}`);
 });
