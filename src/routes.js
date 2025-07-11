@@ -3,9 +3,9 @@ const router = express.Router();
 const { getAllLeads } = require('./db');
 
 // Rota principal só para teste rápido
-router.get('/', (req, res) => {
-  res.send('Bot Rumo Solar rodando!');
-});
+//router.get('/', (req, res) => {
+//  res.send('Bot Rumo Solar rodando!');
+//});
 
 // Rota do painel de leads
 router.get('/dashboard', async (req, res) => {
