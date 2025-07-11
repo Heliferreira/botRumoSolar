@@ -2,8 +2,9 @@ require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
-const routes = require('./src/routes');
-const { getAllLeads } = require('./src/db');
+const routes = require('./routes');
+const { getAllLeads } = require('./db');
+
 
 const app = express();
 
