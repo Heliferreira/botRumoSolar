@@ -10,7 +10,7 @@ const app = express();
 
 // View engine
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'src', 'views'));
+app.set('views', path.join(__dirname, 'views'));
 
 // Arquivos estáticos
 app.use(express.static(path.join(__dirname, 'public'))); // Se tiver pasta public depois
