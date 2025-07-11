@@ -75,15 +75,26 @@ async function enviarMensagem(remetente, mensagem) {
   }
 }
 
-// Middleware Express para o webhook
+  // Middleware Express para o webhook
 async function botWebhook(req, res) {
-  const receivedKey = req.headers['x-webhook-secret'];
-  const expectedKey = process.env.ZAPI_SECRET;
+  const body = req.body;
 
-  if (receivedKey !== expectedKey) {
-    console.warn('⚠️ Chave de segurança inválida');
-    return res.sendStatus(403);
+  console.log('📥 Webhook recebido:', JSON.stringify(body, null, 2));
+
+  const mensagem = body.message?.text;
+  const remetente = body.sender?.phone;
+
+  if (mensagem && remetente) {
+    const resposta = { texto: `Recebido: ${mensagem}` }; // ou chama sua lógica de resposta
+
+    await enviarMensagem(remetente, resposta.texto);
   }
+
+  res.sendStatus(200);
+}
+
+module.exports = botWebhook;
+
 
   const { message } = req.body;
 
