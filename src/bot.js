@@ -1,7 +1,7 @@
 const axios = require('axios');
 require('dotenv').config();
 
-// Função de resposta (a que você criou)
+// Função de resposta automática
 async function responder(mensagem, nome = 'amigo') {
   const msg = mensagem.toLowerCase();
 
@@ -58,7 +58,7 @@ Incrível, né? 😍 Quer que eu te mostre como montar esse sistema aí na sua c
   return { texto: `Não entendi muito bem, ${nome}. Pode me explicar de novo com outras palavras? Estou aqui pra te ajudar! 😉` };
 }
 
-// Função para enviar a mensagem via Z-API
+// Enviar mensagem pela Z-API
 async function enviarMensagem(remetente, mensagem) {
   const instanceId = process.env.ZAPI_INSTANCE;
   const token = process.env.ZAPI_TOKEN;
@@ -75,33 +75,15 @@ async function enviarMensagem(remetente, mensagem) {
   }
 }
 
-  // Middleware Express para o webhook
+// Middleware do webhook (a função principal)
 async function botWebhook(req, res) {
   const body = req.body;
-
   console.log('📥 Webhook recebido:', JSON.stringify(body, null, 2));
 
-  const mensagem = body.message?.text;
-  const remetente = body.sender?.phone;
+  const texto = body.message?.text?.body || body.message?.text;
+  const remetente = body.sender?.phone || body.message?.from;
 
-  if (mensagem && remetente) {
-    const resposta = { texto: `Recebido: ${mensagem}` }; // ou chama sua lógica de resposta
-
-    await enviarMensagem(remetente, resposta.texto);
-  }
-
-  res.sendStatus(200);
-}
-
-module.exports = botWebhook;
-
-
-  const { message } = req.body;
-
-  if (message?.text?.body) {
-    const texto = message.text.body;
-    const remetente = message.from;
-
+  if (texto && remetente) {
     const resposta = await responder(texto);
 
     if (resposta?.texto) {
