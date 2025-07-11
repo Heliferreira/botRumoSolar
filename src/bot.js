@@ -78,6 +78,7 @@ async function enviarMensagem(remetente, mensagem) {
 // Middleware do webhook (a função principal)
 async function botWebhook(req, res) {
   const body = req.body;
+  console.log("🔥 webhook chegou");
   console.log('📥 Webhook recebido:', JSON.stringify(body, null, 2));
 
   const texto = body.message?.text?.body || body.message?.text;
