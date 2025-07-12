@@ -124,16 +124,12 @@ async function enviarMensagem(remetente, mensagem) {
 async function botWebhook(req, res) {
   const body = req.body;
 
-  // ✅ LOG 1: corpo bruto da requisição
-  console.log('\n📥 WEBHOOK RECEBIDO:');
-  console.log(JSON.stringify(body, null, 2));
+  
+  // ✅ LOG 1: mostrar o corpo completo da requisição
+console.log('📥 [LOG 1] Webhook recebido:', JSON.stringify(body, null, 2));
 
-  // ✅ LOG 2: tentar capturar o número do remetente
-  const remetente =
-    body.telefone ||
-    body.sender?.phone ||
-    body.message?.from ||
-    null;
+  // ✅ Captura direta do número
+const remetente = body.telefone || null;
 
   // ✅ LOG 3: mostrar o número bruto
   console.log('📞 [LOG 3] Número bruto recebido:', remetente);
