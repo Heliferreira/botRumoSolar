@@ -63,7 +63,7 @@ async function enviarMensagem(remetente, mensagem) {
   const instanceId = process.env.ZAPI_INSTANCE;
   const token = process.env.ZAPI_TOKEN;
 
-  const url = `https://api.z-api.io/instances/${instanceId}/token/${token}/send-message`;
+ const url = `https://api.z-api.io/instances/${instanceId}/token/${token}/send-text`;
 
   try {
     await axios.post(url, {
