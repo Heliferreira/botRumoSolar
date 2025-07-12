@@ -63,17 +63,23 @@ async function enviarMensagem(remetente, mensagem) {
   const instanceId = process.env.ZAPI_INSTANCE;
   const token = process.env.ZAPI_TOKEN;
 
- const url = `https://api.z-api.io/instances/${instanceId}/token/${token}/send-text`;
+  const url = `https://api.z-api.io/instances/${instanceId}/token/${token}/send-text`;
 
   try {
     await axios.post(url, {
       phone: remetente,
       message: mensagem
+    }, {
+      headers: {
+        // Esse é o segredo que você acabou de gerar
+        'Client-Token': process.env.ZAPI_CLIENT_TOKEN
+      }
     });
   } catch (error) {
     console.error('❌ Erro ao enviar mensagem:', error.response?.data || error.message);
   }
 }
+
 
 // Middleware do webhook
 async function botWebhook(req, res) {
