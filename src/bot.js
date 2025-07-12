@@ -123,57 +123,50 @@ async function enviarMensagem(remetente, mensagem) {
 // 👉 Middleware do webhook
 async function botWebhook(req, res) {
   const body = req.body;
+  console.log('✅ [LOG 1] Webhook recebido:\n', JSON.stringify(body, null, 2));
 
-  // ✅ LOG 1: mostrar corpo da requisição
-  console.log('✅ [LOG 1] Webhook recebido:');
-  console.log(JSON.stringify(body, null, 2));
-
-  // ✅ LOG EXTRA: debug do campo direto
-  console.log('📦 body.telefone recebido:', body.telefone);
-
-  // ✅ LOG 2: tentativa de capturar o número
   const remetente =
     body.telefone ||
+    body.Telefone ||
+    body.phone ||
+    body.from ||
     body.sender?.phone ||
     body.message?.from ||
-    body.from ||
     null;
 
-  // ✅ LOG 3: tipo do remetente (evita passar undefined)
-  console.log('📞 [LOG 3] Número bruto recebido:', remetente);
-  console.log('🧪 [LOG 3.1] Tipo de remetente:', typeof remetente);
+  console.log('📞 Número bruto recebido:', remetente);
 
-  // ✅ LOG 4: validação do remetente
   if (!remetente) {
-    console.error('❌ [LOG 4] Número de remetente não encontrado!');
+    console.error('❌ Remetente não encontrado!');
     return res.sendStatus(400);
   }
 
-  // ✅ LOG 5: formatar o número (só se vier válido)
   const numeroFinal = formatarNumero(remetente);
-  console.log('📞 [LOG 5] Número formatado:', numeroFinal);
+  console.log('📞 Número formatado:', numeroFinal);
 
-  const texto =
-    body.texto?.mensagem ||
-    body.message?.text?.body ||
-    body.message?.body ||
-    null;
+  const textoRaw = body.texto || body.text?.mensagem || body.text?.message;
 
-  const nome = body.senderName || body.chatName || 'amigo';
+  let texto = '';
+  if (typeof textoRaw === 'object' && (textoRaw.message || textoRaw.mensagem)) {
+    texto = (textoRaw.message || textoRaw.mensagem)
+      .toLowerCase()
+      .replace(/^"+|"+$/g, '')
+      .trim();
+  } else if (typeof textoRaw === 'string') {
+    texto = textoRaw.toLowerCase().trim();
+  }
 
-  // ✅ LOG 6: mostrar texto recebido
-  console.log('💬 [LOG 6] Texto recebido:', texto);
+  console.log('💬 Texto recebido:', texto);
 
   if (texto && numeroFinal) {
-    const resposta = await responder(texto, nome);
+    const resposta = await responder(texto);
     if (resposta?.texto) {
+      console.log('📤 Enviando resposta:', resposta.texto);
       await enviarMensagem(numeroFinal, resposta.texto);
     }
   }
 
   res.sendStatus(200);
 }
-
-module.exports = botWebhook;
 
 
