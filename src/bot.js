@@ -123,32 +123,35 @@ async function enviarMensagem(remetente, mensagem) {
 // 👉 Middleware do webhook
 async function botWebhook(req, res) {
   const body = req.body;
+
+  // ✅ LOG 1: mostra o corpo bruto da requisição
   console.log('📥 Webhook recebido:', JSON.stringify(body, null, 2));
 
+  // ✅ LOG 2: tentativa de capturar o número
+  const remetente =
+    body.telefone ||
+    body.sender?.phone ||
+    body.message?.from ||
+    null;
+
+  // ✅ LOG 3: mostrar o número bruto e o formatado
+  console.log('📞 Número bruto:', remetente);
+  console.log('📞 Número formatado:', formatarNumero(remetente));
+
+  // ✅ LOG 4: bloqueio se não houver remetente
+  if (!remetente) {
+    console.error('❌ Remetente não encontrada!');
+    return res.sendStatus(400);
+  }
+
+  // Segue o fluxo normal se passou
   const texto =
     body.texto?.mensagem ||
     body.message?.text?.body ||
     body.message?.body ||
     null;
 
-  const remetente =
-    body.telefone ||
-    body.sender?.phone ||
-    body.message?.from ||
-    null;
-  
-    console.log('📞 Número bruto:', remetente);
-    console.log('📞 Número formatado:', formatarNumero(remetente));
-
-
-  if (!remetente) {
-    console.error('❌ Remetente não encontrado!');
-    return res.sendStatus(400);
-  }
-
   const numeroFinal = formatarNumero(remetente);
-  console.log("📞 Número formatado:", numeroFinal);
-
   const nome = body.senderName || body.chatName || 'amigo';
 
   if (texto && numeroFinal) {
@@ -162,3 +165,4 @@ async function botWebhook(req, res) {
 }
 
 module.exports = botWebhook;
+
