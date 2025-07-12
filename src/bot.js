@@ -128,17 +128,24 @@ async function botWebhook(req, res) {
   // ✅ LOG 1: mostrar o corpo completo da requisição
 console.log('📥 [LOG 1] Webhook recebido:', JSON.stringify(body, null, 2));
 
-  // ✅ Captura direta do número
-const remetente = body.telefone || null;
+  // ✅ Captura robusta do número
+const remetente =
+  body.telefone ||
+  body.sender?.phone ||
+  body.message?.from ||
+  body.from ||
+  null;
 
-  // ✅ LOG 3: mostrar o número bruto
-  console.log('📞 [LOG 3] Número bruto recebido:', remetente);
+// ✅ LOGs após captura
+console.log('📞 [LOG 3] Número bruto recebido:', remetente);
+console.log('📞 [LOG 4] Número formatado:', formatarNumero(remetente));
 
-  // ✅ LOG 4: se número não veio, já avisa
-  if (!remetente) {
-    console.error('❌ [LOG 4] Número de remetente não encontrado!');
-    return res.sendStatus(400);
-  }
+// ✅ Bloqueio se não houver número
+if (!remetente) {
+  console.error('❌ [LOG 5] Número de remetente não encontrado!');
+  return res.sendStatus(400);
+}
+
 
   // ✅ LOG 5: formatar número
   const numeroFinal = formatarNumero(remetente);
