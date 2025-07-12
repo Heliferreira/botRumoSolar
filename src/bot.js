@@ -75,17 +75,28 @@ async function enviarMensagem(remetente, mensagem) {
   }
 }
 
-// Middleware do webhook (a função principal)
+// Middleware do webhook
 async function botWebhook(req, res) {
   const body = req.body;
-
   console.log('📥 Webhook recebido:', JSON.stringify(body, null, 2));
 
-  const texto = body.texto?.mensagem;
-  const remetente = body.telefone;
+  // Tenta pegar texto e remetente em diferentes estruturas
+  const texto =
+    body.texto?.mensagem ||
+    body.message?.text?.body ||
+    body.message?.body ||
+    null;
+
+  const remetente =
+    body.telefone ||
+    body.sender?.phone ||
+    body.message?.from ||
+    null;
+
+  const nome = body.senderName || body.chatName || 'amigo';
 
   if (texto && remetente) {
-    const resposta = await responder(texto, body.senderName || 'amigo');
+    const resposta = await responder(texto, nome);
 
     if (resposta?.texto) {
       await enviarMensagem(remetente, resposta.texto);
@@ -94,6 +105,5 @@ async function botWebhook(req, res) {
 
   res.sendStatus(200);
 }
-
 
 module.exports = botWebhook;
