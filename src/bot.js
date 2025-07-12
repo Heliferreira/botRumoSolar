@@ -124,38 +124,50 @@ async function enviarMensagem(remetente, mensagem) {
 async function botWebhook(req, res) {
   const body = req.body;
 
-  // ✅ LOG 1: mostra o corpo bruto da requisição
-  console.log('📥 Webhook recebido:', JSON.stringify(body, null, 2));
+  // ✅ LOG 1: corpo bruto da requisição
+  console.log('\n📥 WEBHOOK RECEBIDO:');
+  console.log(JSON.stringify(body, null, 2));
 
-  // ✅ LOG 2: tentativa de capturar o número
+  // ✅ LOG 2: tentar capturar o número do remetente
   const remetente =
     body.telefone ||
     body.sender?.phone ||
     body.message?.from ||
     null;
 
-  // ✅ LOG 3: mostrar o número bruto e o formatado
-  console.log('📞 Número bruto:', remetente);
-  console.log('📞 Número formatado:', formatarNumero(remetente));
+  // ✅ LOG 3: mostrar o número bruto
+  console.log('📞 [LOG 3] Número bruto recebido:', remetente);
 
-  // ✅ LOG 4: bloqueio se não houver remetente
+  // ✅ LOG 4: se número não veio, já avisa
   if (!remetente) {
-    console.error('❌ Remetente não encontrada!');
+    console.error('❌ [LOG 4] Número de remetente não encontrado!');
     return res.sendStatus(400);
   }
 
-  // Segue o fluxo normal se passou
+  // ✅ LOG 5: formatar número
+  const numeroFinal = formatarNumero(remetente);
+  console.log('✅ [LOG 5] Número formatado para envio:', numeroFinal);
+
+  // ✅ LOG 6: tentar extrair o texto da mensagem recebida
   const texto =
     body.texto?.mensagem ||
     body.message?.text?.body ||
     body.message?.body ||
     null;
 
-  const numeroFinal = formatarNumero(remetente);
-  const nome = body.senderName || body.chatName || 'amigo';
+  console.log('💬 [LOG 6] Texto recebido:', texto);
 
+  // ✅ LOG 7: verificar nome do remetente
+  const nome = body.senderName || body.chatName || 'amigo';
+  console.log('🧑 [LOG 7] Nome detectado:', nome);
+
+  // ✅ LOG 8: responder se texto e número final existem
   if (texto && numeroFinal) {
     const resposta = await responder(texto, nome);
+
+    // ✅ LOG 9: exibir a resposta gerada
+    console.log('📤 [LOG 9] Resposta a ser enviada:', resposta?.texto);
+
     if (resposta?.texto) {
       await enviarMensagem(numeroFinal, resposta.texto);
     }
@@ -165,4 +177,5 @@ async function botWebhook(req, res) {
 }
 
 module.exports = botWebhook;
+
 
