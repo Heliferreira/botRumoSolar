@@ -1,7 +1,6 @@
 const axios = require('axios');
 require('dotenv').config();
 
-// 👉 Função para formatar número do WhatsApp
 function formatarNumero(numero) {
   if (!numero) {
     console.error('⚠️ Número não informado para formatar!');
@@ -10,26 +9,33 @@ function formatarNumero(numero) {
 
   let num = numero.replace(/\D/g, '');
 
-  if (num.length === 13) {
+  // Se já estiver no formato correto (13 dígitos começando com 55)
+  if (num.length === 13 && num.startsWith('55')) {
     return num;
   }
 
-  if (num.length === 12) {
-    const ddd = num.slice(0, 4);
+  // Se estiver com 12 dígitos começando com 55 (faltando o 9)
+  if (num.length === 12 && num.startsWith('55')) {
+    const ddd = num.slice(2, 4);
     const restante = num.slice(4);
-    return ddd + '9' + restante;
+    return '55' + ddd + '9' + restante;
   }
 
+  // Se estiver com 11 dígitos (DDD + número) — insere 55 no início
   if (num.length === 11) {
     return '55' + num;
   }
 
-  if (!num.startsWith('55')) {
-    num = '55' + num;
+  // Se for número nacional sem DDI
+  if (num.length === 10) {
+    return '55' + '9' + num;
   }
 
+  // Se estiver maluco demais, retorna como está (com log de aviso)
+  console.warn('⚠️ Número em formato não previsto:', num);
   return num;
 }
+
 
 // 👉 Função de resposta automática
 async function responder(mensagem, nome = 'amigo') {
@@ -127,6 +133,10 @@ async function botWebhook(req, res) {
     body.sender?.phone ||
     body.message?.from ||
     null;
+  
+    console.log('📞 Número bruto:', remetente);
+    console.log('📞 Número formatado:', formatarNumero(remetente));
+
 
   if (!remetente) {
     console.error('❌ Remetente não encontrado!');
