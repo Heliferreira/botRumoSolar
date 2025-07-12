@@ -116,15 +116,14 @@ async function botWebhook(req, res) {
     body.message?.body ||
     null;
 
-  const numeroFinal = formatarNumero(remetente);
-console.log("📞 Número formatado:", numeroFinal);
-
-
   const remetente =
     body.telefone ||
     body.sender?.phone ||
     body.message?.from ||
     null;
+
+  const numeroFinal = formatarNumero(remetente);
+  console.log("📞 Número formatado:", numeroFinal);
 
   const nome = body.senderName || body.chatName || 'amigo';
 
