@@ -62,24 +62,33 @@ Incrível, né? 😍 Quer que eu te mostre como montar esse sistema aí na sua c
 async function enviarMensagem(remetente, mensagem) {
   const instanceId = process.env.ZAPI_INSTANCE;
   const token = process.env.ZAPI_TOKEN;
+  const clientToken = process.env.ZAPI_CLIENT_TOKEN;
 
   const url = `https://api.z-api.io/instances/${instanceId}/token/${token}/send-text`;
 
+  console.log('➡️ Enviando mensagem para:', remetente);
+  console.log('➡️ Mensagem:', mensagem);
+  console.log('➡️ URL:', url);
+  console.log('➡️ Client-Token:', clientToken);
+
   try {
-    await axios.post(url, {
-      phone: remetente,
-      message: mensagem
-    }, {
-      headers: {
-        // Esse é o segredo que você acabou de gerar
-        'Client-Token': process.env.ZAPI_CLIENT_TOKEN
+    const response = await axios.post(
+      url,
+      {
+        phone: remetente,
+        message: mensagem,
+      },
+      {
+        headers: {
+          'Client-Token': clientToken,
+        },
       }
-    });
+    );
+    console.log('✅ Mensagem enviada com sucesso:', response.data);
   } catch (error) {
     console.error('❌ Erro ao enviar mensagem:', error.response?.data || error.message);
   }
 }
-
 
 // Middleware do webhook
 async function botWebhook(req, res) {
