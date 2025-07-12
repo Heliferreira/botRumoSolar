@@ -1,7 +1,20 @@
 const axios = require('axios');
 require('dotenv').config();
 
-// Função de resposta automática
+// 👉 Função para formatar número do WhatsApp
+function formatarNumero(numero) {
+  let num = numero.replace(/\D/g, ''); // Remove tudo que não for número
+  if (!num.startsWith('55')) {
+    num = '55' + num;
+  }
+  if (num.length === 12) {
+    // Insere o '9' após o DDD
+    num = num.slice(0, 4) + '9' + num.slice(4);
+  }
+  return num;
+}
+
+// 👉 Função de resposta automática
 async function responder(mensagem, nome = 'amigo') {
   const msg = mensagem.toLowerCase();
 
@@ -58,44 +71,34 @@ Incrível, né? 😍 Quer que eu te mostre como montar esse sistema aí na sua c
   return { texto: `Não entendi muito bem, ${nome}. Pode me explicar de novo com outras palavras? Estou aqui pra te ajudar! 😉` };
 }
 
-// Enviar mensagem pela Z-API
+// 👉 Enviar mensagem pela Z-API
 async function enviarMensagem(remetente, mensagem) {
   const instanceId = process.env.ZAPI_INSTANCE;
   const token = process.env.ZAPI_TOKEN;
-  const clientToken = process.env.ZAPI_CLIENT_TOKEN;
 
   const url = `https://api.z-api.io/instances/${instanceId}/token/${token}/send-text`;
 
-  console.log('➡️ Enviando mensagem para:', remetente);
-  console.log('➡️ Mensagem:', mensagem);
-  console.log('➡️ URL:', url);
-  console.log('➡️ Client-Token:', clientToken);
+  const numeroFinal = formatarNumero(remetente);
 
   try {
-    const response = await axios.post(
-      url,
-      {
-        phone: remetente,
-        message: mensagem,
-      },
-      {
-        headers: {
-          'Client-Token': clientToken,
-        },
+    await axios.post(url, {
+      phone: numeroFinal,
+      message: mensagem
+    }, {
+      headers: {
+        'Client-Token': process.env.ZAPI_CLIENT_TOKEN
       }
-    );
-    console.log('✅ Mensagem enviada com sucesso:', response.data);
+    });
   } catch (error) {
     console.error('❌ Erro ao enviar mensagem:', error.response?.data || error.message);
   }
 }
 
-// Middleware do webhook
+// 👉 Middleware do webhook
 async function botWebhook(req, res) {
   const body = req.body;
   console.log('📥 Webhook recebido:', JSON.stringify(body, null, 2));
 
-  // Tenta pegar texto e remetente em diferentes estruturas
   const texto =
     body.texto?.mensagem ||
     body.message?.text?.body ||
@@ -112,7 +115,6 @@ async function botWebhook(req, res) {
 
   if (texto && remetente) {
     const resposta = await responder(texto, nome);
-
     if (resposta?.texto) {
       await enviarMensagem(remetente, resposta.texto);
     }
