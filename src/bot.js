@@ -3,11 +3,20 @@ require('dotenv').config();
 
 // 👉 Função para formatar número do WhatsApp
 function formatarNumero(numero) {
+  if (!numero) {
+    console.error('⚠️ Número não informado para formatar!');
+    return '';
+  }
+
   let num = numero.replace(/\D/g, '');
 
   if (!num.startsWith('55')) {
     num = '55' + num;
   }
+
+  return num;
+}
+
 
   // Se o número tiver 13 dígitos, já está correto
   if (num.length === 13) {
@@ -122,15 +131,20 @@ async function botWebhook(req, res) {
     body.message?.from ||
     null;
 
+  if (!remetente) {
+    console.error('❌ Remetente não encontrado!');
+    return res.sendStatus(400);
+  }
+
   const numeroFinal = formatarNumero(remetente);
   console.log("📞 Número formatado:", numeroFinal);
 
   const nome = body.senderName || body.chatName || 'amigo';
 
-  if (texto && remetente) {
+  if (texto && numeroFinal) {
     const resposta = await responder(texto, nome);
     if (resposta?.texto) {
-      await enviarMensagem(remetente, resposta.texto);
+      await enviarMensagem(numeroFinal, resposta.texto); // <- USAR o número formatado
     }
   }
 
@@ -138,3 +152,4 @@ async function botWebhook(req, res) {
 }
 
 module.exports = botWebhook;
+
