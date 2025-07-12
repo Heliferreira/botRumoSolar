@@ -124,53 +124,48 @@ async function enviarMensagem(remetente, mensagem) {
 async function botWebhook(req, res) {
   const body = req.body;
 
-  
-  // ✅ LOG 1: mostrar o corpo completo da requisição
-console.log('📥 [LOG 1] Webhook recebido:', JSON.stringify(body, null, 2));
+  // ✅ LOG 1: mostrar corpo da requisição
+  console.log('✅ [LOG 1] Webhook recebido:');
+  console.log(JSON.stringify(body, null, 2));
 
-  // ✅ Captura robusta do número
-const remetente =
-  body.telefone ||
-  body.sender?.phone ||
-  body.message?.from ||
-  body.from ||
-  null;
+  // ✅ LOG EXTRA: debug do campo direto
+  console.log('📦 body.telefone recebido:', body.telefone);
 
-// ✅ LOGs após captura
-console.log('📞 [LOG 3] Número bruto recebido:', remetente);
-console.log('📞 [LOG 4] Número formatado:', formatarNumero(remetente));
+  // ✅ LOG 2: tentativa de capturar o número
+  const remetente =
+    body.telefone ||
+    body.sender?.phone ||
+    body.message?.from ||
+    body.from ||
+    null;
 
-// ✅ Bloqueio se não houver número
-if (!remetente) {
-  console.error('❌ [LOG 5] Número de remetente não encontrado!');
-  return res.sendStatus(400);
-}
+  // ✅ LOG 3: tipo do remetente (evita passar undefined)
+  console.log('📞 [LOG 3] Número bruto recebido:', remetente);
+  console.log('🧪 [LOG 3.1] Tipo de remetente:', typeof remetente);
 
+  // ✅ LOG 4: validação do remetente
+  if (!remetente) {
+    console.error('❌ [LOG 4] Número de remetente não encontrado!');
+    return res.sendStatus(400);
+  }
 
-  // ✅ LOG 5: formatar número
+  // ✅ LOG 5: formatar o número (só se vier válido)
   const numeroFinal = formatarNumero(remetente);
-  console.log('✅ [LOG 5] Número formatado para envio:', numeroFinal);
+  console.log('📞 [LOG 5] Número formatado:', numeroFinal);
 
-  // ✅ LOG 6: tentar extrair o texto da mensagem recebida
   const texto =
     body.texto?.mensagem ||
     body.message?.text?.body ||
     body.message?.body ||
     null;
 
+  const nome = body.senderName || body.chatName || 'amigo';
+
+  // ✅ LOG 6: mostrar texto recebido
   console.log('💬 [LOG 6] Texto recebido:', texto);
 
-  // ✅ LOG 7: verificar nome do remetente
-  const nome = body.senderName || body.chatName || 'amigo';
-  console.log('🧑 [LOG 7] Nome detectado:', nome);
-
-  // ✅ LOG 8: responder se texto e número final existem
   if (texto && numeroFinal) {
     const resposta = await responder(texto, nome);
-
-    // ✅ LOG 9: exibir a resposta gerada
-    console.log('📤 [LOG 9] Resposta a ser enviada:', resposta?.texto);
-
     if (resposta?.texto) {
       await enviarMensagem(numeroFinal, resposta.texto);
     }
