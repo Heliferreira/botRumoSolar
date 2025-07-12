@@ -3,14 +3,25 @@ require('dotenv').config();
 
 // 👉 Função para formatar número do WhatsApp
 function formatarNumero(numero) {
-  let num = numero.replace(/\D/g, ''); // Remove tudo que não for número
+  let num = numero.replace(/\D/g, '');
+
   if (!num.startsWith('55')) {
     num = '55' + num;
   }
-  if (num.length === 12) {
-    // Insere o '9' após o DDD
-    num = num.slice(0, 4) + '9' + num.slice(4);
+
+  // Se o número tiver 13 dígitos, já está correto
+  if (num.length === 13) {
+    return num;
   }
+
+  // Se tiver 12 dígitos, insere o 9 depois do DDD
+  if (num.length === 12) {
+    const ddd = num.slice(0, 4);      // 55 + DDD (ex: 5541)
+    const restante = num.slice(4);    // número sem DDD
+    return ddd + '9' + restante;
+  }
+
+  // Se não for 12 ou 13, retorna como está (casos não previstos)
   return num;
 }
 
