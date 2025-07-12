@@ -9,33 +9,36 @@ function formatarNumero(numero) {
 
   let num = numero.replace(/\D/g, '');
 
-  // Se já estiver no formato correto (13 dígitos começando com 55)
+  // Se o número tem 12 dígitos e começa com 55 → está faltando o 9
+  if (num.length === 12 && num.startsWith('55')) {
+    const ddd = num.slice(2, 4);         // 41
+    const resto = num.slice(4);          // 98164599 (sem o 9)
+    return '55' + ddd + '9' + resto;
+  }
+
+  // Se já tiver 13 dígitos corretamente
   if (num.length === 13 && num.startsWith('55')) {
     return num;
   }
 
-  // Se estiver com 12 dígitos começando com 55 (faltando o 9)
-  if (num.length === 12 && num.startsWith('55')) {
-    const ddd = num.slice(2, 4);
-    const restante = num.slice(4);
-    return '55' + ddd + '9' + restante;
-  }
-
-  // Se estiver com 11 dígitos (DDD + número) — insere 55 no início
+  // Se tiver só 11 dígitos (DDD + número) → adiciona 55
   if (num.length === 11) {
     return '55' + num;
   }
 
-  // Se for número nacional sem DDI
-  if (num.length === 10) {
-    return '55' + '9' + num;
+  // Se for nacional sem DDI nem DDD
+  if (num.length === 8) {
+    console.warn('⚠️ Número muito curto:', num);
+    return '';
   }
 
-  // Se estiver maluco demais, retorna como está (com log de aviso)
-  console.warn('⚠️ Número em formato não previsto:', num);
+  // Qualquer outro caso, tenta forçar com 55
+  if (!num.startsWith('55')) {
+    num = '55' + num;
+  }
+
   return num;
 }
-
 
 // 👉 Função de resposta automática
 async function responder(mensagem, nome = 'amigo') {
