@@ -11,12 +11,16 @@ function formatarNumero(numero) {
   let num = numero.replace(/\D/g, '');
 
   if (num.length === 13) {
-    // Já está com DDI + DDD + 9 + número (ex: 5541999999999)
     return num;
   }
 
+  if (num.length === 12) {
+    const ddd = num.slice(0, 4);
+    const restante = num.slice(4);
+    return ddd + '9' + restante;
+  }
+
   if (num.length === 11) {
-    // Apenas DDD + número (ex: 41999999999) → adiciona DDI
     return '55' + num;
   }
 
@@ -26,21 +30,6 @@ function formatarNumero(numero) {
 
   return num;
 }
-
-  // Se o número tiver 13 dígitos, já está correto
-  if (num.length === 13) {
-    return num;
-  }
-
-  // Se tiver 12 dígitos, insere o 9 depois do DDD
-  if (num.length === 12) {
-    const ddd = num.slice(0, 4);      // 55 + DDD (ex: 5541)
-    const restante = num.slice(4);    // número sem DDD
-    return ddd + '9' + restante;
-  }
-
-  // Se não for 12 ou 13, retorna como está (casos não previstos)
-  return num;
 
 // 👉 Função de resposta automática
 async function responder(mensagem, nome = 'amigo') {
@@ -152,7 +141,7 @@ async function botWebhook(req, res) {
   if (texto && numeroFinal) {
     const resposta = await responder(texto, nome);
     if (resposta?.texto) {
-      await enviarMensagem(numeroFinal, resposta.texto); // <- USAR o número formatado
+      await enviarMensagem(numeroFinal, resposta.texto);
     }
   }
 
@@ -160,4 +149,3 @@ async function botWebhook(req, res) {
 }
 
 module.exports = botWebhook;
-
