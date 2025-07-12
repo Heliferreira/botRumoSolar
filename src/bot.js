@@ -32,7 +32,6 @@ function formatarNumero(numero) {
 
   // Se não for 12 ou 13, retorna como está (casos não previstos)
   return num;
-}
 
 // 👉 Função de resposta automática
 async function responder(mensagem, nome = 'amigo') {
