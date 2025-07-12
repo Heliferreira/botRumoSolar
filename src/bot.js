@@ -10,13 +10,22 @@ function formatarNumero(numero) {
 
   let num = numero.replace(/\D/g, '');
 
+  if (num.length === 13) {
+    // Já está com DDI + DDD + 9 + número (ex: 5541999999999)
+    return num;
+  }
+
+  if (num.length === 11) {
+    // Apenas DDD + número (ex: 41999999999) → adiciona DDI
+    return '55' + num;
+  }
+
   if (!num.startsWith('55')) {
     num = '55' + num;
   }
 
   return num;
 }
-
 
   // Se o número tiver 13 dígitos, já está correto
   if (num.length === 13) {
