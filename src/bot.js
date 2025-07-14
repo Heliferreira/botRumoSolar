@@ -65,7 +65,8 @@ async function botWebhook(req, res) {
 
       if (!resposta) {
         await enviarMensagemSimples(numeroFinal, '✅ Bot recebeu sua mensagem e está funcionando!');
-      } else if (resposta?.texto && resposta?.botoes) {
+      }
+       else if (resposta?.texto && resposta?.botoes) {
         await enviarMensagem(numeroFinal, resposta); // Mensagem com botões
       } else {
         await enviarMensagemSimples(numeroFinal, resposta.texto); // Mensagem simples
