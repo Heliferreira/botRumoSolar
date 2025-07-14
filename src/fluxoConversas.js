@@ -87,15 +87,13 @@ return enviarMenuPrincipal(numero);
 
 // ✅ Adicione essa função aqui embaixo 👇
 function enviarMenuPrincipal(numero) {
-  return enviarMensagemComBotoes(numero,
-    'Olá! 👋 Seja bem-vindo à *Villa Energia*.\nEscolha um dos serviços abaixo:',
-    [
-      { id: 'servico_energia', text: '☀️ Energia Solar' },
-      { id: 'servico_cameras', text: '📸 Câmeras de segurança' },
-      { id: 'servico_automacao', text: '🏡 Automação residencial' },
-      { id: 'servico_iluminacao', text: '💡 Iluminação de ambientes' },
+  return {
+    texto: 'Olá! 👋 Seja bem-vindo à *Rumo Solar*.\nEscolha um dos serviços abaixo:',
+    botoes: [
+      { id: 'servico_energia', text: '☀️ Energia Solar' }
     ]
-  );
+  };
 }
+
 
 module.exports = { processarFluxo };
