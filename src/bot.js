@@ -4,7 +4,7 @@ const axios = require('axios');
 require('dotenv').config();
 
 const { processarFluxo } = require('./fluxoConversas'); // fluxo inteligente
-const { enviarMensagem } = require('./zapiService');    // envio de mensagens e botões
+const { enviarMensagem, enviarMensagemSimples } = require('./zapiService');    // envio de mensagens e botões
 
 // 👉 Formata número para o padrão da Z-API
 function formatarNumero(numero) {
