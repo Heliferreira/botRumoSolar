@@ -4,7 +4,7 @@ const { enviarMensagemSimples, enviarMensagemComBotoes } = require('./zapiServic
 const { getProximoVendedor } = require('./vendedorService');
 const { salvarLead } = require('./db');
 
-const contexto = {}; // ✅ Agora sim a variável existe
+const contexto = {};
 console.log('✅ Arquivo fluxoConversas.js carregado e contexto disponível!');
 
 async function processarFluxo(numero, mensagem, tipo) {
@@ -14,52 +14,61 @@ async function processarFluxo(numero, mensagem, tipo) {
   if (mensagem === 'voltar_menu') {
     contexto[numero] = { etapa: 'inicio' };
     console.log('🔄 Voltou para o menu principal');
-    return enviarMenuPrincipal(numero);
+    return enviarMenuPrincipal(numero); // retorna objeto com texto + botoes
   }
 
   // ETAPA 1: MENU INICIAL
   if (estado.etapa === 'inicio') {
     console.log('📍 Etapa: inicio');
+
     if (tipo === 'botao') {
       if (mensagem === 'servico_energia') {
         contexto[numero] = { etapa: 'aguardando_valor', servico: 'Energia Solar' };
         console.log('🔆 Escolheu: Energia Solar');
-        return enviarMensagemComBotoes(numero,
-          '🔆 *Energia Solar*\nVocê pode economizar até *95%* na sua conta de luz!\n\n💬 Me diga quanto você gasta por mês com energia elétrica (ex: 350)',
-          [{ id: 'voltar_menu', text: '🔙 Voltar ao Menu' }]
-        );
+
+        return {
+          texto: '🔆 *Energia Solar*\nVocê pode economizar até *95%* na sua conta de luz!\n\n💬 Me diga quanto você gasta por mês com energia elétrica (ex: 350)',
+          botoes: [{ id: 'voltar_menu', text: '🔙 Voltar ao Menu' }]
+        };
       }
-    } else {
-      console.log('📩 Tipo de entrada não é botão, exibindo menu novamente.');
-      return enviarMenuPrincipal(numero);
     }
+
+    console.log('📩 Tipo de entrada não é botão, exibindo menu novamente.');
+    return enviarMenuPrincipal(numero);
   }
 
   // ETAPA 2: SIMULAÇÃO
   if (estado.etapa === 'aguardando_valor') {
     console.log('📍 Etapa: aguardando_valor');
     const valor = parseFloat(mensagem);
+
     if (!isNaN(valor)) {
       const economia = (valor * 0.95).toFixed(2);
-      contexto[numero] = { etapa: 'confirmar_interesse', servico: estado.servico, valor };
+      contexto[numero] = {
+        etapa: 'confirmar_interesse',
+        servico: estado.servico,
+        valor
+      };
+
       console.log(`💰 Valor informado: ${valor}, Economia estimada: ${economia}`);
 
-      return enviarMensagemComBotoes(numero,
-        `💡 Com uma conta de R$${valor}, você pode economizar até *R$${economia}* por mês!\n\nDeseja falar com um especialista agora?`,
-        [
+      return {
+        texto: `💡 Com uma conta de R$${valor}, você pode economizar até *R$${economia}* por mês!\n\nDeseja falar com um especialista agora?`,
+        botoes: [
           { id: 'falar_especialista', text: '✅ Sim, quero simular' },
           { id: 'voltar_menu', text: '🔙 Voltar ao Menu' }
         ]
-      );
+      };
     } else {
       console.log('❌ Valor inválido informado.');
-      return enviarMensagemSimples(numero, '❗ Envie apenas o valor numérico da sua conta. Ex: 350');
+      return { texto: '❗ Envie apenas o valor numérico da sua conta. Ex: 350' };
     }
   }
 
   // ETAPA 3: CONFIRMAÇÃO
   if (estado.etapa === 'confirmar_interesse' && mensagem === 'falar_especialista') {
     console.log('📍 Etapa: confirmar_interesse - usuário quer falar com especialista');
+
     const vendedor = await getProximoVendedor();
     console.log('🧑‍💼 Vendedor atribuído:', vendedor);
 
@@ -76,16 +85,18 @@ async function processarFluxo(numero, mensagem, tipo) {
     );
 
     contexto[numero] = { etapa: 'finalizado' };
-    return enviarMensagemSimples(numero, '✅ Um especialista está a caminho! Aguarde nosso contato.');
+
+    return {
+      texto: '✅ Um especialista está a caminho! Aguarde nosso contato.'
+    };
   }
 
   // FALLBACK
-  // Fallback: nenhuma condição atendida
-console.log('❓ Fallback: nenhuma condição atendida, enviando menu novamente.');
-return enviarMenuPrincipal(numero);
+  console.log('❓ Fallback: nenhuma condição atendida, enviando menu novamente.');
+  return enviarMenuPrincipal(numero);
 }
 
-// ✅ Adicione essa função aqui embaixo 👇
+// ✅ Corrigida para retornar o formato certo
 function enviarMenuPrincipal(numero) {
   return {
     texto: 'Olá! 👋 Seja bem-vindo à *Rumo Solar*.\nEscolha um dos serviços abaixo:',
@@ -94,6 +105,5 @@ function enviarMenuPrincipal(numero) {
     ]
   };
 }
-
 
 module.exports = { processarFluxo };
