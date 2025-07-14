@@ -58,11 +58,10 @@ async function botWebhook(req, res) {
 
   // Se mensagem e número válidos, chama o fluxo
   if (texto && numeroFinal) {
-    const resposta = await processarFluxo(numeroFinal, texto, tipoEntrada);
-    if (resposta?.texto) {
-      await enviarMensagem(numeroFinal, resposta);
-    }
-  }
+  console.log('⚡️Mensagem recebida, respondendo diretamente...');
+  await enviarMensagemSimples(numeroFinal, '✅ Bot recebeu sua mensagem e está funcionando!');
+}
+
 
   res.sendStatus(200); // finaliza o webhook
 }
