@@ -80,8 +80,22 @@ async function processarFluxo(numero, mensagem, tipo) {
   }
 
   // FALLBACK
-  console.log('❓ Fallback: nenhuma condição atendida, enviando menu novamente.');
-  return enviarMenuPrincipal(numero);
+  // Fallback: nenhuma condição atendida
+console.log('❓ Fallback: nenhuma condição atendida, enviando menu novamente.');
+return enviarMenuPrincipal(numero);
+}
+
+// ✅ Adicione essa função aqui embaixo 👇
+function enviarMenuPrincipal(numero) {
+  return enviarMensagemComBotoes(numero,
+    'Olá! 👋 Seja bem-vindo à *Villa Energia*.\nEscolha um dos serviços abaixo:',
+    [
+      { id: 'servico_energia', text: '☀️ Energia Solar' },
+      { id: 'servico_cameras', text: '📸 Câmeras de segurança' },
+      { id: 'servico_automacao', text: '🏡 Automação residencial' },
+      { id: 'servico_iluminacao', text: '💡 Iluminação de ambientes' },
+    ]
+  );
 }
 
 module.exports = { processarFluxo };
