@@ -74,3 +74,5 @@ async function processarFluxo(numero, mensagem, tipo) {
   console.log('❓ Fallback: nenhuma condição atendida, enviando menu novamente.');
   return enviarMenuPrincipal(numero);
 }
+
+module.exports = { processarFluxo };
