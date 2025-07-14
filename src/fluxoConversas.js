@@ -1,10 +1,19 @@
+// src/fluxoConversas.js
+
+const { enviarMensagemSimples, enviarMensagemComBotoes } = require('./zapiService');
+const { getProximoVendedor } = require('./vendedorService');
+const { salvarLead } = require('./db');
+
+const contexto = {}; // ✅ Agora sim a variável existe
+console.log('✅ Arquivo fluxoConversas.js carregado e contexto disponível!');
+
 async function processarFluxo(numero, mensagem, tipo) {
-  console.log('🧠 Fluxo acionado com:', { numero, mensagem, tipo });
+  console.log('🌺 Fluxo acionado com:', { numero, mensagem, tipo });
   const estado = contexto[numero] || { etapa: 'inicio' };
 
   if (mensagem === 'voltar_menu') {
     contexto[numero] = { etapa: 'inicio' };
-    console.log('↩️ Voltou para o menu principal');
+    console.log('🔄 Voltou para o menu principal');
     return enviarMenuPrincipal(numero);
   }
 
