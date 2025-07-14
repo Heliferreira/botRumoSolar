@@ -2,7 +2,7 @@ const axios = require('axios');
 require('dotenv').config();
 
 const { processarFluxo } = require('./fluxoConversas'); // fluxo inteligente
-const { enviarMensagem, enviarMensagemSimples } = require('./zapiService'); // envio de mensagens e botões
+const { enviarMensagemSimples, enviarMensagemComBotoes } = require('./zapiService'); // corrigido aqui
 
 function formatarNumero(numero) {
   if (!numero) return '';
@@ -66,10 +66,10 @@ async function botWebhook(req, res) {
       if (!resposta) {
         await enviarMensagemSimples(numeroFinal, '✅ Bot recebeu sua mensagem e está funcionando!');
       }
-       else if (resposta?.texto && resposta?.botoes) {
-        await enviarMensagem(numeroFinal, resposta); // Mensagem com botões
+      else if (resposta?.texto && resposta?.botoes) {
+        await enviarMensagemComBotoes(numeroFinal, resposta.texto, resposta.botoes); // corrigido aqui
       } else {
-        await enviarMensagemSimples(numeroFinal, resposta.texto); // Mensagem simples
+        await enviarMensagemSimples(numeroFinal, resposta.texto);
       }
     }
 
