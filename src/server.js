@@ -5,7 +5,6 @@ const path = require('path');
 const routes = require('./routes');
 const { getAllLeads } = require('./db');
 
-
 const app = express();
 
 // View engine
@@ -13,15 +12,15 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 // Arquivos estáticos
-app.use(express.static(path.join(__dirname, 'public'))); // Se tiver pasta public depois
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Body parser
 app.use(bodyParser.json());
 
-// Usa rotas (incluindo /webhook e /dashboard)
+// Usar as rotas (webhook, dashboard, etc.)
 app.use(routes);
 
-// Rota inicial redireciona pro dashboard
+// Página inicial redireciona para dashboard
 app.get('/', async (req, res) => {
   try {
     const leads = await getAllLeads();

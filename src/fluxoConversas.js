@@ -2,7 +2,8 @@ const { enviarMensagemSimples } = require('./zapiService');
 const { getProximoVendedor } = require('./vendedorService');
 const { salvarLead } = require('./db');
 
-const contexto = {}; // Armazena o estado da conversa por número
+const contexto = {};
+
 console.log('✅ Arquivo fluxoConversas.js carregado e contexto disponível!');
 
 async function processarFluxo(numero, mensagem, tipo) {
@@ -12,7 +13,6 @@ async function processarFluxo(numero, mensagem, tipo) {
 
     if (mensagem === 'voltar_menu' || mensagem === 'voltar' || mensagem === 'menu') {
       contexto[numero] = { etapa: 'inicio' };
-      console.log('🔄 Voltou para o menu principal');
       await enviarMensagemSimples(numero, enviarMenuPrincipal());
       return;
     }
@@ -20,14 +20,12 @@ async function processarFluxo(numero, mensagem, tipo) {
     if (estado.etapa === 'inicio') {
       if (mensagem === 'servico_energia' || mensagem.includes('energia')) {
         contexto[numero] = { etapa: 'aguardando_valor', servico: 'Energia Solar' };
-        console.log('🔆 Escolheu: Energia Solar');
         await enviarMensagemSimples(
           numero,
           '🔆 *Energia Solar*\nVocê pode economizar até *95%* na sua conta de luz!\n\n💬 Me diga quanto você gasta por mês (ex: 350)\n\nSe quiser voltar ao menu, digite: *voltar*'
         );
         return;
       } else {
-        console.log('📩 Tipo de entrada não reconhecida, exibindo menu novamente.');
         await enviarMensagemSimples(numero, enviarMenuPrincipal());
         return;
       }
@@ -38,23 +36,19 @@ async function processarFluxo(numero, mensagem, tipo) {
       if (!isNaN(valor)) {
         const economia = (valor * 0.95).toFixed(2);
         contexto[numero] = { etapa: 'confirmar_interesse', servico: estado.servico, valor };
-        console.log(`💰 Valor informado: ${valor}, Economia estimada: ${economia}`);
         await enviarMensagemSimples(
           numero,
           `💡 Com R$${valor}, você pode economizar até *R$${economia}* por mês!\nDeseja falar com um especialista?\n\nDigite *sim* para continuar ou *voltar* para o menu.`
         );
         return;
       } else {
-        console.log('❌ Valor inválido informado.');
         await enviarMensagemSimples(numero, '❗ Envie apenas o valor numérico. Ex: 350');
         return;
       }
     }
 
     if (estado.etapa === 'confirmar_interesse' && mensagem.includes('sim')) {
-      console.log('📍 Etapa: confirmar_interesse - usuário quer falar com especialista');
       const vendedor = await getProximoVendedor();
-      console.log('🧑‍💼 Vendedor atribuído:', vendedor);
       await salvarLead({
         numero,
         servico: estado.servico,
@@ -68,8 +62,9 @@ async function processarFluxo(numero, mensagem, tipo) {
       return;
     }
 
-    console.log('❓ Fallback: enviando menu principal.');
+    console.log('⚠️ Fallback ativado: entrada inesperada, retornando ao menu.');
     await enviarMensagemSimples(numero, enviarMenuPrincipal());
+
   } catch (err) {
     console.error('❌ Erro no fluxo:', err.message);
     try {
