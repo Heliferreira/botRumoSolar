@@ -1,4 +1,3 @@
-// src/zapiService.js
 const axios = require('axios');
 require('dotenv').config();
 
@@ -22,19 +21,24 @@ const defaultHeaders = {
 async function enviarMensagemSimples(numero, texto) {
   if (!texto || !numero) {
     console.warn('⚠️ Texto ou número não fornecido.');
-    return;
+    return { error: true, message: 'Texto ou número não fornecido' };
   }
-
   const instanceId = process.env.ZAPI_INSTANCE;
-  const token = process.env.ZAPI_TOKEN;
-  const url = `https://api.z-api.io/instances/${instanceId}/token/${token}/send-text`;
+  if (!instanceId) return { error: true, message: 'ZAPI_INSTANCE não definido' };
+  const url = `https://api.z-api.io/instances/${instanceId}/send-text`;
   const phone = formatarNumero(numero);
 
   try {
-    await axios.post(url, { phone, message: texto }, { headers: defaultHeaders });
-    console.log(`✅ Mensagem simples enviada para ${phone}`);
+    const response = await axios.post(url, { phone, message: texto }, { headers: defaultHeaders });
+    console.log(`✅ Resposta Z-API para ${phone}:`, response.data);
+    if (response.data.error) {
+      console.error('❌ Erro Z-API:', response.data.message);
+      return { error: true, message: response.data.message };
+    }
+    return response.data;
   } catch (err) {
     console.error('❌ Erro ao enviar mensagem simples:', err.response?.data || err.message);
+    throw err;
   }
 }
 
@@ -42,16 +46,15 @@ async function enviarMensagemSimples(numero, texto) {
 async function enviarMensagemComBotoes(numero, texto, botoes) {
   if (!texto || !numero || !botoes?.length) {
     console.warn('⚠️ Texto, número ou botões não fornecidos corretamente.');
-    return;
+    return { error: true, message: 'Texto, número ou botões inválidos' };
   }
-
   const instanceId = process.env.ZAPI_INSTANCE;
-  const token = process.env.ZAPI_TOKEN;
-  const url = `https://api.z-api.io/instances/${instanceId}/token/${token}/send-button-message`;
+  if (!instanceId) return { error: true, message: 'ZAPI_INSTANCE não definido' };
+  const url = `https://api.z-api.io/instances/${instanceId}/send-button-message`;
   const phone = formatarNumero(numero);
 
   try {
-    await axios.post(
+    const response = await axios.post(
       url,
       {
         phone,
@@ -64,15 +67,21 @@ async function enviarMensagemComBotoes(numero, texto, botoes) {
       },
       { headers: defaultHeaders }
     );
-    console.log(`✅ Mensagem com botões enviada para ${phone}`);
+    console.log(`✅ Resposta Z-API para ${phone} (botões):`, response.data);
+    if (response.data.error) {
+      console.error('❌ Erro Z-API:', response.data.message);
+      return { error: true, message: response.data.message };
+    }
+    return response.data;
   } catch (err) {
     console.error('❌ Erro ao enviar mensagem com botões:', err.response?.data || err.message);
+    throw err;
   }
 }
 
 // ✅ Função universal para envio (decide se envia botão ou texto simples)
 async function enviarMensagem(numero, resposta) {
-  if (!resposta) return;
+  if (!resposta) return { error: true, message: 'Resposta não fornecida' };
 
   if (resposta.texto && resposta.botoes) {
     return enviarMensagemComBotoes(numero, resposta.texto, resposta.botoes);
@@ -87,11 +96,29 @@ async function enviarMensagem(numero, resposta) {
   }
 
   console.warn('⚠️ Formato de resposta desconhecido:', resposta);
+  return { error: true, message: 'Formato de resposta inválido' };
+}
+
+// Verifica se o número está registrado e tem consentimento
+async function verificarNumero(phone) {
+  const instanceId = process.env.ZAPI_INSTANCE;
+  if (!instanceId) return false;
+  const url = `https://api.z-api.io/instances/${instanceId}/check-number/${phone}`;
+  try {
+    const response = await axios.get(url, { headers: defaultHeaders });
+    console.log('📋 Status do número:', response.data);
+    return response.data.isRegistered && response.data.isOptedIn;
+  } catch (err) {
+    console.error('❌ Erro ao verificar número:', err.response?.data || err.message);
+    return false;
+  }
 }
 
 // Exporta os métodos
 module.exports = {
   enviarMensagemSimples,
   enviarMensagemComBotoes,
-  enviarMensagem // 👈 agora você pode usar essa função no webhook
+  enviarMensagem,
+  verificarNumero,
+  formatarNumero
 };
