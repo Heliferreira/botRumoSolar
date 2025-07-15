@@ -23,9 +23,10 @@ async function enviarMensagemSimples(numero, texto) {
 
   const instanceId = process.env.ZAPI_INSTANCE;
   const token = process.env.ZAPI_CLIENT_TOKEN;
+  const clientToken = process.env.CLIENT_TOKEN;
 
-  if (!instanceId || !token) {
-    return { error: true, message: 'ZAPI_INSTANCE ou ZAPI_CLIENT_TOKEN não definido' };
+  if (!instanceId || !token || !clientToken) {
+    return { error: true, message: 'Variáveis de ambiente ausentes!' };
   }
 
   const url = `https://api.z-api.io/instances/${instanceId}/token/${token}/send-text`;
@@ -39,7 +40,8 @@ async function enviarMensagemSimples(numero, texto) {
       message: texto,
     }, {
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Client-Token': clientToken // <- CABEÇALHO NOVO AQUI
       }
     });
 
@@ -62,9 +64,10 @@ async function enviarMensagemSimples(numero, texto) {
 async function enviarMensagemComBotoes(numero, botoes) {
   const instanceId = process.env.ZAPI_INSTANCE;
   const token = process.env.ZAPI_CLIENT_TOKEN;
+  const clientToken = process.env.CLIENT_TOKEN;
 
-  if (!instanceId || !token) {
-    return { error: true, message: 'ZAPI_INSTANCE ou ZAPI_CLIENT_TOKEN não definido' };
+  if (!instanceId || !token || !clientToken) {
+    return { error: true, message: 'Variáveis de ambiente ausentes!' };
   }
 
   const url = `https://api.z-api.io/instances/${instanceId}/token/${token}/send-button-message`;
@@ -79,7 +82,8 @@ async function enviarMensagemComBotoes(numero, botoes) {
       listButtons: botoes.listButtons,
     }, {
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Client-Token': clientToken // <- CABEÇALHO NOVO AQUI TAMBÉM
       }
     });
 
@@ -98,9 +102,8 @@ async function enviarMensagemComBotoes(numero, botoes) {
   }
 }
 
-// 🔧 Agora exportando corretamente a função formatarNumero também
 module.exports = {
   enviarMensagemSimples,
   enviarMensagemComBotoes,
-  formatarNumero, // <-- ESSA LINHA É ESSENCIAL
+  formatarNumero,
 };
