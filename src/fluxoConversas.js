@@ -84,8 +84,10 @@ async function processarFluxo(numero, mensagem, tipo) {
   }
 
   // FALLBACK — qualquer entrada fora do fluxo esperado
-  console.log('❓ Fallback: nenhuma condição atendida, enviando menu novamente.');
-  return enviarMenuPrincipal(numero);
+ console.log('❓ Fallback: nenhuma condição atendida, enviando menu diretamente.');
+await enviarMensagem(numero, enviarMenuPrincipal(numero));
+return;
+
 }
 
 // ✅ Menu principal com botão
