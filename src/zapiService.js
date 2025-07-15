@@ -22,8 +22,8 @@ async function enviarMensagemSimples(numero, texto) {
   }
 
   const instanceId = process.env.ZAPI_INSTANCE;
-  const token = process.env.ZAPI_CLIENT_TOKEN;
-  const clientToken = process.env.CLIENT_TOKEN;
+  const clientToken = process.env.ZAPI_CLIENT_TOKEN; // Vai no HEADER
+  const token = process.env.CLIENT_TOKEN; // Vai na URL
 
   if (!instanceId || !token || !clientToken) {
     return { error: true, message: 'Variáveis de ambiente ausentes!' };
@@ -41,7 +41,7 @@ async function enviarMensagemSimples(numero, texto) {
     }, {
       headers: {
         'Content-Type': 'application/json',
-        'Client-Token': clientToken // <- CABEÇALHO NOVO AQUI
+        'Client-Token': clientToken
       }
     });
 
@@ -63,8 +63,8 @@ async function enviarMensagemSimples(numero, texto) {
 // Envia mensagem com botões
 async function enviarMensagemComBotoes(numero, botoes) {
   const instanceId = process.env.ZAPI_INSTANCE;
-  const token = process.env.ZAPI_CLIENT_TOKEN;
-  const clientToken = process.env.CLIENT_TOKEN;
+  const clientToken = process.env.ZAPI_CLIENT_TOKEN;
+  const token = process.env.CLIENT_TOKEN;
 
   if (!instanceId || !token || !clientToken) {
     return { error: true, message: 'Variáveis de ambiente ausentes!' };
@@ -83,7 +83,7 @@ async function enviarMensagemComBotoes(numero, botoes) {
     }, {
       headers: {
         'Content-Type': 'application/json',
-        'Client-Token': clientToken // <- CABEÇALHO NOVO AQUI TAMBÉM
+        'Client-Token': clientToken
       }
     });
 
