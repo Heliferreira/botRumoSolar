@@ -3,48 +3,53 @@ const { getProximoVendedor } = require('./vendedorService');
 const { salvarLead } = require('./db');
 
 const contexto = {};
-
-console.log('✅ Arquivo fluxoConversas.js carregado e contexto disponível!');
+console.log('✅ fluxoConversas.js carregado');
 
 async function processarFluxo(numero, mensagem, tipo) {
   try {
-    console.log('🌺 Fluxo acionado com:', { numero, mensagem, tipo });
+    console.log('🌸 Mensagem recebida no fluxo:', { numero, mensagem, tipo });
+
     const estado = contexto[numero] || { etapa: 'inicio' };
 
-    if (mensagem === 'voltar_menu' || mensagem === 'voltar' || mensagem === 'menu') {
+    if (['voltar', 'menu', 'voltar_menu'].includes(mensagem)) {
       contexto[numero] = { etapa: 'inicio' };
       await enviarMensagemSimples(numero, enviarMenuPrincipal());
       return;
     }
 
     if (estado.etapa === 'inicio') {
-      if (mensagem === 'servico_energia' || mensagem.includes('energia')) {
+      if (mensagem.includes('energia')) {
         contexto[numero] = { etapa: 'aguardando_valor', servico: 'Energia Solar' };
         await enviarMensagemSimples(
           numero,
-          '🔆 *Energia Solar*\nVocê pode economizar até *95%* na sua conta de luz!\n\n💬 Me diga quanto você gasta por mês (ex: 350)\n\nSe quiser voltar ao menu, digite: *voltar*'
+          '🔆 *Energia Solar*\nVocê pode economizar até *95%* na sua conta de luz!\n\n💬 Me diga quanto você gasta por mês (ex: 350)'
         );
         return;
-      } else {
-        await enviarMensagemSimples(numero, enviarMenuPrincipal());
-        return;
       }
+
+      // 🧠 Mesmo que não digite energia, responde o menu
+      await enviarMensagemSimples(numero, enviarMenuPrincipal());
+      return;
     }
 
     if (estado.etapa === 'aguardando_valor') {
       const valor = parseFloat(mensagem);
       if (!isNaN(valor)) {
         const economia = (valor * 0.95).toFixed(2);
-        contexto[numero] = { etapa: 'confirmar_interesse', servico: estado.servico, valor };
+        contexto[numero] = {
+          etapa: 'confirmar_interesse',
+          servico: estado.servico,
+          valor,
+        };
         await enviarMensagemSimples(
           numero,
-          `💡 Com R$${valor}, você pode economizar até *R$${economia}* por mês!\nDeseja falar com um especialista?\n\nDigite *sim* para continuar ou *voltar* para o menu.`
+          `💡 Com R$${valor}, você pode economizar até *R$${economia}* por mês!\nDeseja falar com um especialista?\nDigite *sim* ou *voltar*.`
         );
         return;
-      } else {
-        await enviarMensagemSimples(numero, '❗ Envie apenas o valor numérico. Ex: 350');
-        return;
       }
+
+      await enviarMensagemSimples(numero, '❗ Envie apenas números. Ex: 300');
+      return;
     }
 
     if (estado.etapa === 'confirmar_interesse' && mensagem.includes('sim')) {
@@ -54,29 +59,28 @@ async function processarFluxo(numero, mensagem, tipo) {
         servico: estado.servico,
         valorConta: estado.valor,
         vendedor: vendedor.nome,
-        status: 'novo'
+        status: 'novo',
       });
-      await enviarMensagemSimples(vendedor.numero, `📥 Novo lead de *${estado.servico}*\nCliente: https://wa.me/${numero}\nValor: R$${estado.valor}`);
+      await enviarMensagemSimples(
+        vendedor.numero,
+        `📥 Novo lead de *${estado.servico}*\nCliente: https://wa.me/${numero}\nValor: R$${estado.valor}`
+      );
       contexto[numero] = { etapa: 'finalizado' };
-      await enviarMensagemSimples(numero, '✅ Especialista a caminho! Aguarde.');
+      await enviarMensagemSimples(numero, '✅ Um especialista vai te chamar!');
       return;
     }
 
-    console.log('⚠️ Fallback ativado: entrada inesperada, retornando ao menu.');
+    // Fallback
     await enviarMensagemSimples(numero, enviarMenuPrincipal());
 
   } catch (err) {
     console.error('❌ Erro no fluxo:', err.message);
-    try {
-      await enviarMensagemSimples(numero, '❗ Ocorreu um erro. Tente novamente.');
-    } catch (e) {
-      console.error('❌ Falha no envio do erro:', e.message);
-    }
+    await enviarMensagemSimples(numero, '❗ Erro interno. Tente novamente.');
   }
 }
 
 function enviarMenuPrincipal() {
-  return 'Olá! 👋 Seja bem-vindo à *Rumo Solar*.\n\nDigite uma das opções abaixo para começar:\n\n☀️ *energia* → para simular economia com energia solar\n🔙 *voltar* → para voltar ao menu';
+  return 'Olá! 👋 Seja bem-vindo à *Rumo Solar*.\n\nEscolha uma opção:\n\n☀️ Digite *energia* para simular economia com energia solar\n🔙 Digite *voltar* para reiniciar o atendimento';
 }
 
 module.exports = { processarFluxo };

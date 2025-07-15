@@ -7,31 +7,23 @@ const { getAllLeads } = require('./db');
 
 const app = express();
 
-// View engine
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-
-// Arquivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
-
-// Body parser
 app.use(bodyParser.json());
-
-// Usar as rotas (webhook, dashboard, etc.)
 app.use(routes);
 
-// Página inicial redireciona para dashboard
 app.get('/', async (req, res) => {
   try {
     const leads = await getAllLeads();
     res.render('dashboard', { leads });
   } catch (error) {
-    console.error('Erro ao carregar leads:', error);
+    console.error('❌ Erro no dashboard:', error);
     res.status(500).send('Erro ao carregar os leads.');
   }
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`✅ Servidor rodando na porta ${PORT}`);
+  console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
 });
