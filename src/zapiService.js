@@ -70,8 +70,28 @@ async function enviarMensagemComBotoes(numero, texto, botoes) {
   }
 }
 
+// ✅ Função universal para envio (decide se envia botão ou texto simples)
+async function enviarMensagem(numero, resposta) {
+  if (!resposta) return;
+
+  if (resposta.texto && resposta.botoes) {
+    return enviarMensagemComBotoes(numero, resposta.texto, resposta.botoes);
+  }
+
+  if (typeof resposta === 'string') {
+    return enviarMensagemSimples(numero, resposta);
+  }
+
+  if (resposta.texto) {
+    return enviarMensagemSimples(numero, resposta.texto);
+  }
+
+  console.warn('⚠️ Formato de resposta desconhecido:', resposta);
+}
+
 // Exporta os métodos
 module.exports = {
   enviarMensagemSimples,
-  enviarMensagemComBotoes
+  enviarMensagemComBotoes,
+  enviarMensagem // 👈 agora você pode usar essa função no webhook
 };

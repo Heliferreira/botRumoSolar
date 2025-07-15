@@ -2,7 +2,7 @@ const axios = require('axios');
 require('dotenv').config();
 
 const { processarFluxo } = require('./fluxoConversas'); // fluxo inteligente
-const { enviarMensagemSimples, enviarMensagemComBotoes } = require('./zapiService'); // corrigido aqui
+const { enviarMensagemSimples } = require('./zapiService'); // usado só no catch
 
 function formatarNumero(numero) {
   if (!numero) return '';
@@ -39,7 +39,7 @@ async function botWebhook(req, res) {
 
     // Detecta a mensagem e o tipo:
     let texto = '';
-    let tipoEntrada = 'texto'; // ou 'botao'
+    let tipoEntrada = 'texto';
 
     if (body.button_response?.id) {
       texto = body.button_response.id;
@@ -57,25 +57,15 @@ async function botWebhook(req, res) {
 
     console.log('💬 Entrada recebida:', texto, '| Tipo:', tipoEntrada);
 
-    // Se mensagem e número válidos, chama o fluxo
+    // Chama o fluxo, que já se encarrega de responder
     if (texto && numeroFinal) {
-      console.log('⚡️Mensagem recebida, respondendo diretamente...');
-
-      const resposta = await processarFluxo(numeroFinal, texto, tipoEntrada);
-
-      if (!resposta) {
-        await enviarMensagemSimples(numeroFinal, '✅ Bot recebeu sua mensagem e está funcionando!');
-      }
-      else if (resposta?.texto && resposta?.botoes) {
-        await enviarMensagemComBotoes(numeroFinal, resposta.texto, resposta.botoes); // corrigido aqui
-      } else {
-        await enviarMensagemSimples(numeroFinal, resposta.texto);
-      }
+      console.log('⚡️Mensagem recebida, executando o fluxo...');
+      await processarFluxo(numeroFinal, texto, tipoEntrada);
     }
 
-    res.sendStatus(200); // finaliza o webhook
+    res.sendStatus(200);
   } catch (err) {
-    console.error('❌ Erro ao processar fluxo ou enviar resposta:', err.message);
+    console.error('❌ Erro ao processar webhook:', err.message);
     try {
       await enviarMensagemSimples(numeroFinal, '❗ Ocorreu um erro. Tente novamente mais tarde.');
     } catch (e) {

@@ -1,4 +1,4 @@
-const { enviarMensagemSimples, enviarMensagemComBotoes } = require('./zapiService');
+const { enviarMensagem } = require('./zapiService'); // ✅ usamos apenas essa agora
 const { getProximoVendedor } = require('./vendedorService');
 const { salvarLead } = require('./db');
 
@@ -14,7 +14,8 @@ async function processarFluxo(numero, mensagem, tipo) {
   if (mensagem === 'voltar_menu') {
     contexto[numero] = { etapa: 'inicio' };
     console.log('🔄 Voltou para o menu principal');
-    return enviarMenuPrincipal(numero);
+    await enviarMensagem(numero, enviarMenuPrincipal(numero));
+    return;
   }
 
   // ETAPA 1: Menu Inicial
@@ -24,14 +25,16 @@ async function processarFluxo(numero, mensagem, tipo) {
       if (mensagem === 'servico_energia') {
         contexto[numero] = { etapa: 'aguardando_valor', servico: 'Energia Solar' };
         console.log('🔆 Escolheu: Energia Solar');
-        return {
+        await enviarMensagem(numero, {
           texto: '🔆 *Energia Solar*\nVocê pode economizar até *95%* na sua conta de luz!\n\n💬 Me diga quanto você gasta por mês com energia elétrica (ex: 350)',
           botoes: [{ id: 'voltar_menu', text: '🔙 Voltar ao Menu' }]
-        };
+        });
+        return;
       }
     } else {
       console.log('📩 Tipo de entrada não é botão, exibindo menu novamente.');
-      return enviarMenuPrincipal(numero);
+      await enviarMensagem(numero, enviarMenuPrincipal(numero));
+      return;
     }
   }
 
@@ -46,16 +49,18 @@ async function processarFluxo(numero, mensagem, tipo) {
 
       console.log(`💰 Valor informado: ${valor}, Economia estimada: ${economia}`);
 
-      return {
+      await enviarMensagem(numero, {
         texto: `💡 Com uma conta de R$${valor}, você pode economizar até *R$${economia}* por mês!\n\nDeseja falar com um especialista agora?`,
         botoes: [
           { id: 'falar_especialista', text: '✅ Sim, quero simular' },
           { id: 'voltar_menu', text: '🔙 Voltar ao Menu' }
         ]
-      };
+      });
+      return;
     } else {
       console.log('❌ Valor inválido informado.');
-      return { texto: '❗ Envie apenas o valor numérico da sua conta. Ex: 350' };
+      await enviarMensagem(numero, '❗ Envie apenas o valor numérico da sua conta. Ex: 350');
+      return;
     }
   }
 
@@ -74,20 +79,19 @@ async function processarFluxo(numero, mensagem, tipo) {
       status: 'novo'
     });
 
-    await enviarMensagemSimples(
-      vendedor.numero,
+    await enviarMensagem(vendedor.numero,
       `📥 Novo lead de *${estado.servico}*\nCliente: https://wa.me/${numero}\nValor da conta: R$${estado.valor}`
     );
 
     contexto[numero] = { etapa: 'finalizado' };
-    return { texto: '✅ Um especialista está a caminho! Aguarde nosso contato.' };
+    await enviarMensagem(numero, '✅ Um especialista está a caminho! Aguarde nosso contato.');
+    return;
   }
 
   // FALLBACK — qualquer entrada fora do fluxo esperado
- console.log('❓ Fallback: nenhuma condição atendida, enviando menu diretamente.');
-await enviarMensagem(numero, enviarMenuPrincipal(numero));
-return;
-
+  console.log('❓ Fallback: nenhuma condição atendida, enviando menu diretamente.');
+  await enviarMensagem(numero, enviarMenuPrincipal(numero));
+  return;
 }
 
 // ✅ Menu principal com botão
