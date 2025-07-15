@@ -98,7 +98,9 @@ async function enviarMensagemComBotoes(numero, botoes) {
   }
 }
 
+// 🔧 Agora exportando corretamente a função formatarNumero também
 module.exports = {
   enviarMensagemSimples,
   enviarMensagemComBotoes,
+  formatarNumero, // <-- ESSA LINHA É ESSENCIAL
 };
