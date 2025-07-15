@@ -23,10 +23,14 @@ async function enviarMensagemSimples(numero, texto) {
     console.warn('⚠️ Texto ou número não fornecido.');
     return { error: true, message: 'Texto ou número não fornecido' };
   }
+
   const instanceId = process.env.ZAPI_INSTANCE;
   if (!instanceId) return { error: true, message: 'ZAPI_INSTANCE não definido' };
+
   const url = `https://api.z-api.io/instances/${instanceId}/send-text`;
   const phone = formatarNumero(numero);
+
+  console.log(`📤 Tentando enviar mensagem para: ${phone} | Mensagem: "${texto}"`);
 
   try {
     const response = await axios.post(url, { phone, message: texto }, { headers: defaultHeaders });
@@ -48,10 +52,14 @@ async function enviarMensagemComBotoes(numero, texto, botoes) {
     console.warn('⚠️ Texto, número ou botões não fornecidos corretamente.');
     return { error: true, message: 'Texto, número ou botões inválidos' };
   }
+
   const instanceId = process.env.ZAPI_INSTANCE;
   if (!instanceId) return { error: true, message: 'ZAPI_INSTANCE não definido' };
+
   const url = `https://api.z-api.io/instances/${instanceId}/send-button-message`;
   const phone = formatarNumero(numero);
+
+  console.log(`📤 Tentando enviar mensagem com botões para: ${phone}`);
 
   try {
     const response = await axios.post(
@@ -67,11 +75,14 @@ async function enviarMensagemComBotoes(numero, texto, botoes) {
       },
       { headers: defaultHeaders }
     );
+
     console.log(`✅ Resposta Z-API para ${phone} (botões):`, response.data);
+
     if (response.data.error) {
       console.error('❌ Erro Z-API:', response.data.message);
       return { error: true, message: response.data.message };
     }
+
     return response.data;
   } catch (err) {
     console.error('❌ Erro ao enviar mensagem com botões:', err.response?.data || err.message);
@@ -79,7 +90,7 @@ async function enviarMensagemComBotoes(numero, texto, botoes) {
   }
 }
 
-// ✅ Função universal para envio (decide se envia botão ou texto simples)
+// ✅ Função universal para envio
 async function enviarMensagem(numero, resposta) {
   if (!resposta) return { error: true, message: 'Resposta não fornecida' };
 
@@ -103,7 +114,9 @@ async function enviarMensagem(numero, resposta) {
 async function verificarNumero(phone) {
   const instanceId = process.env.ZAPI_INSTANCE;
   if (!instanceId) return false;
+
   const url = `https://api.z-api.io/instances/${instanceId}/check-number/${phone}`;
+
   try {
     const response = await axios.get(url, { headers: defaultHeaders });
     console.log('📋 Status do número:', response.data);
