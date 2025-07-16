@@ -40,6 +40,7 @@ async function processarFluxo(numero, mensagem, tipo) {
           servico: estado.servico,
           valor,
         };
+        console.log('🧪 Enviando mensagem de economia solar para:', numero);
         await enviarMensagemSimples(
           numero,
           `💡 Com R$${valor}, você pode economizar até *R$${economia}* por mês!\nDeseja falar com um especialista?\nDigite *sim* ou *voltar*.`

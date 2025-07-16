@@ -16,6 +16,7 @@ function formatarNumero(numero) {
 
 // Envia mensagem simples (texto)
 async function enviarMensagemSimples(numero, texto) {
+  console.log('🧪 [zapiService] enviarMensagemSimples foi chamado!');
   if (!texto || !numero) {
     console.warn('⚠️ Texto ou número não fornecido.');
     return { error: true, message: 'Texto ou número não fornecido' };
