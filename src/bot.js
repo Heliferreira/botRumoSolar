@@ -10,7 +10,8 @@ async function botWebhook(req, res) {
     const body = req.body;
 
     // 🔐 Checagem de variáveis de ambiente
-    if (!process.env.ZAPI_CLIENT_TOKEN || !process.env.ZAPI_INSTANCE) {
+    if  (!process.env.TOKEN_DA_INSTANCIA || !process.env.ID_INSTANCE)
+ {
       console.error('❌ Variáveis de ambiente ausentes');
       return res.sendStatus(500);
     }
