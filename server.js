@@ -11,12 +11,10 @@ const bodyParser = require('body-parser');
 const routes = require('./src/routes');
 const { getAllLeads } = require('./src/db');
 
-
-
 const app = express();
 
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', path.join(__dirname, 'src', 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json());
 app.use(routes);
