@@ -1,5 +1,9 @@
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+console.log("🔍 Variáveis de ambiente carregadas:");
+console.log("ID_INSTANCE:", process.env.ID_INSTANCE);
+console.log("CLIENT_TOKEN:", process.env.CLIENT_TOKEN);
+
 
 const express = require('express');
 const bodyParser = require('body-parser');
