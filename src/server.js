@@ -1,9 +1,11 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+
 const express = require('express');
 const bodyParser = require('body-parser');
-const path = require('path');
 const routes = require('./routes');
 const { getAllLeads } = require('./db');
+
 
 const app = express();
 
