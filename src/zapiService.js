@@ -1,6 +1,11 @@
 const axios = require('axios');
 require('dotenv').config();
 
+// 🧪 Log de teste para verificar se o .env foi carregado corretamente
+console.log('🔍 INSTANCIA_ID:', process.env.ID_INSTANCE);
+console.log('🔍 TOKEN:', process.env.CLIENT_TOKEN);
+console.log('🔍 CLIENT_TOKEN:', process.env.TOKEN_DA_INSTANCIA);
+
 // 🧼 Formata número para o padrão 55 + DDD + 9 + número
 function formatarNumero(numero) {
   if (!numero) return '';
