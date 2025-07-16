@@ -49,6 +49,23 @@
   </header>
 
   <div class="container mt-4">
+    <div class="mb-4 d-flex justify-content-between align-items-center">
+  <form class="d-flex align-items-center" method="get" action="/">
+    <label for="status" class="me-2 fw-bold text-secondary">Filtrar por status:</label>
+    <select name="status" id="status" class="form-select me-2" style="width: 200px;">
+      <option value="">Todos</option>
+      <option value="novo" <%= filtroStatus === 'novo' ? 'selected' : '' %>>Novo</option>
+      <option value="em andamento" <%= filtroStatus === 'em andamento' ? 'selected' : '' %>>Em andamento</option>
+      <option value="finalizado" <%= filtroStatus === 'finalizado' ? 'selected' : '' %>>Finalizado</option>
+    </select>
+    <button type="submit" class="btn btn-success">Filtrar</button>
+  </form>
+
+  <% if (filtroStatus) { %>
+    <a href="/" class="btn btn-outline-secondary">Limpar filtro</a>
+  <% } %>
+</div>
+
     <table class="table table-bordered table-hover shadow-sm">
       <thead>
         <tr>

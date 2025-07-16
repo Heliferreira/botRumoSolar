@@ -3,9 +3,10 @@ const fs = require('fs');
 const path = require('path');
 
 const vendedores = [
-  { nome: 'João', numero: '5511999990001' },
+ 
+  { nome: 'Heli Ferreira', numero: '5541987285450' },// substitua pelo seu número real
   { nome: 'Ana', numero: '5511988880002' },
-  { nome: 'Carlos', numero: '5511977770003' }
+  { nome: 'Carlos', numero: '5511977770003' },
 ];
 
 const statePath = path.join(__dirname, 'ultimoVendedor.json');
