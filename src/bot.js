@@ -1,4 +1,4 @@
-require('dotenv').config(); // 👈 Carrega as variáveis de ambiente imediatamente
+
 const { processarFluxo } = require('./fluxoConversas');
 const { enviarMensagemSimples, formatarNumero } = require('./zapiService');
 
