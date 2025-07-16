@@ -23,8 +23,9 @@ async function enviarMensagemSimples(numero, texto) {
   }
 
   const instanceId = process.env.ID_INSTANCE;
-  const clientToken = process.env.TOKEN_DA_INSTANCIA;
-  const token = process.env.CLIENT_TOKEN;
+  const token = process.env.TOKEN_DA_INSTANCIA;
+  const clientToken = process.env.CLIENT_TOKEN;
+
 
   if (!instanceId || !token || !clientToken) {
     return { error: true, message: 'Variáveis de ambiente ausentes!' };
@@ -63,8 +64,9 @@ async function enviarMensagemSimples(numero, texto) {
 
 async function enviarMensagemComBotoes(numero, botoes) {
   const instanceId = process.env.ID_INSTANCE;
-  const clientToken = process.env.TOKEN_DA_INSTANCIA;
-  const token = process.env.CLIENT_TOKEN;
+  const token = process.env.TOKEN_DA_INSTANCIA;
+  const clientToken = process.env.CLIENT_TOKEN;
+
 
   if (!instanceId || !token || !clientToken) {
     return { error: true, message: 'Variáveis de ambiente ausentes!' };
