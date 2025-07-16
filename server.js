@@ -8,8 +8,9 @@ console.log("CLIENT_TOKEN:", process.env.CLIENT_TOKEN);
 
 const express = require('express');
 const bodyParser = require('body-parser');
-const routes = require('./routes');
-const { getAllLeads } = require('./db');
+const routes = require('./src/routes');
+const { getAllLeads } = require('./src/db');
+
 
 
 const app = express();
