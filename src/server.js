@@ -1,3 +1,4 @@
+const path = require('path');
 
 require('dotenv').config(); // sem path custom
 console.log("🔍 Variáveis de ambiente carregadas:");
