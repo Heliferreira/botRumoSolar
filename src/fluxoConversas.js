@@ -7,7 +7,7 @@ console.log('✅ fluxoConversas.js carregado');
 
 async function processarFluxo(numero, mensagem, tipo) {
   try {
-    console.log('🌸 Mensagem recebida no fluxo:', { numero, mensagem, tipo });
+    console.log('⚙️ Processando fluxo:', { numero, mensagem, tipo });
 
     const estado = contexto[numero] || { etapa: 'inicio' };
 
@@ -27,7 +27,6 @@ async function processarFluxo(numero, mensagem, tipo) {
         return;
       }
 
-      // 🧠 Mesmo que não digite energia, responde o menu
       await enviarMensagemSimples(numero, enviarMenuPrincipal());
       return;
     }
@@ -70,7 +69,6 @@ async function processarFluxo(numero, mensagem, tipo) {
       return;
     }
 
-    // Fallback
     await enviarMensagemSimples(numero, enviarMenuPrincipal());
 
   } catch (err) {

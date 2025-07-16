@@ -1,70 +1,65 @@
 const { processarFluxo } = require('./fluxoConversas');
-const { enviarMensagemSimples, verificarNumero, formatarNumero } = require('./zapiService');
+const { enviarMensagemSimples, formatarNumero } = require('./zapiService');
 
 async function botWebhook(req, res) {
-  let numeroFinal = ''; // Declara fora do try para usar no catch
+  let numeroFinal = '';
   try {
-    // 🧪 LOG DE DEBUG
-    console.log('📥 Webhook chegou!');
+    console.log('📥 Webhook recebido!');
     console.log('📦 Dados recebidos:\n', JSON.stringify(req.body, null, 2));
-
-    // 🔐 Verificação de variáveis de ambiente
-    if (!process.env.ZAPI_CLIENT_TOKEN || !process.env.ZAPI_INSTANCE) {
-      console.error('❌ Variáveis ZAPI_CLIENT_TOKEN ou ZAPI_INSTANCE não definidas!');
-      return res.sendStatus(500);
-    }
 
     const body = req.body;
 
-    // ✅ CAPTURA DO REMETENTE
-    const remetente = body?.phone;
+    // 🔐 Checagem de variáveis de ambiente
+    if (!process.env.ZAPI_CLIENT_TOKEN || !process.env.ZAPI_INSTANCE) {
+      console.error('❌ Variáveis de ambiente ausentes');
+      return res.sendStatus(500);
+    }
+
+    // ✅ Verificação do tipo de mensagem recebida
+    if (body.type !== 'ReceivedCallback') {
+      console.warn('⚠️ Tipo de mensagem ignorado:', body.type);
+      return res.sendStatus(200);
+    }
+
+    // ✅ Número do remetente
+    const remetente = body.phone;
     if (!remetente) {
-      console.error('❌ Remetente não encontrado!');
+      console.error('❌ Número do remetente ausente');
       return res.sendStatus(400);
     }
 
     numeroFinal = formatarNumero(remetente);
 
-    // ⚠️ Verificação do número (desativada para testes)
-    // if (!(await verificarNumero(numeroFinal))) {
-    //   console.error('❌ Número não registrado ou sem consentimento:', numeroFinal);
-    //   return res.sendStatus(400);
-    // }
-
-    // ✅ CAPTURA DO TEXTO OU ID DO BOTÃO
+    // ✅ Extração da mensagem
     let texto = '';
-    let tipoEntrada = 'texto';
+    let tipoEntrada = '';
 
-    if (body.button_response?.id) {
-      texto = body.button_response.id;
+    if (body?.buttonsResponseMessage?.message) {
+      texto = body.buttonsResponseMessage.message;
       tipoEntrada = 'botao';
+    } else if (body?.text?.message) {
+      texto = body.text.message;
+      tipoEntrada = 'texto';
     } else {
-      texto =
-        body?.text?.message ||
-        body?.messages?.[0]?.text?.body ||
-        '';
-      texto = texto.toLowerCase().trim();
+      console.warn('⚠️ Nenhuma mensagem útil encontrada.');
+      return res.sendStatus(200);
     }
 
+    texto = texto.toLowerCase().trim();
     console.log('💬 Entrada:', texto, '| Tipo:', tipoEntrada);
 
-    // ✅ PROCESSAMENTO DO FLUXO
-    if (texto && numeroFinal) {
-      await processarFluxo(numeroFinal, texto, tipoEntrada);
-    }
-
+    await processarFluxo(numeroFinal, texto, tipoEntrada);
     res.sendStatus(200);
+
   } catch (err) {
     console.error('❌ Erro no webhook:', err.message);
-
-    try {
-      if (numeroFinal) {
+    if (numeroFinal) {
+      try {
         await enviarMensagemSimples(numeroFinal, '❗ Ocorreu um erro. Tente novamente.');
+      } catch (e) {
+        console.error('❌ Falha ao enviar mensagem de erro:', e.message);
       }
-    } catch (e) {
-      console.error('❌ Falha ao enviar mensagem de erro:', e.message);
     }
-
     res.sendStatus(500);
   }
 }
