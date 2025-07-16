@@ -2,11 +2,6 @@
 const { processarFluxo } = require('./fluxoConversas');
 const { enviarMensagemSimples, formatarNumero } = require('./zapiService');
 
-// ... restante do seu código
-
-const { processarFluxo } = require('./fluxoConversas');
-const { enviarMensagemSimples, formatarNumero } = require('./zapiService');
-
 async function botWebhook(req, res) {
   let numeroFinal = '';
   try {
@@ -16,8 +11,7 @@ async function botWebhook(req, res) {
     const body = req.body;
 
     // 🔐 Checagem de variáveis de ambiente
-    if (!process.env.CLIENT_TOKEN || !process.env.ID_INSTANCE);
- {
+    if (!process.env.CLIENT_TOKEN || !process.env.ID_INSTANCE) {
       console.error('❌ Variáveis de ambiente ausentes');
       return res.sendStatus(500);
     }
