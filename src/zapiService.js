@@ -1,95 +1,109 @@
 const axios = require('axios');
 require('dotenv').config();
 
-// 🧪 Log de teste para verificar se o .env foi carregado corretamente
-console.log('🔍 INSTANCIA_ID:', process.env.ID_INSTANCE);
-console.log('🔍 TOKEN:', process.env.CLIENT_TOKEN);
-console.log('🔍 CLIENT_TOKEN:', process.env.TOKEN_DA_INSTANCIA);
-
-// 🧼 Formata número para o padrão 55 + DDD + 9 + número
 function formatarNumero(numero) {
   if (!numero) return '';
-  const num = numero.replace(/\D/g, '');
+  let num = numero.replace(/\D/g, '');
 
-  if (num.length === 13 && num.startsWith('55')) return num;                      // já está ok
   if (num.length === 12 && num.startsWith('55')) return '55' + num.slice(2, 4) + '9' + num.slice(4);
+  if (num.length === 13 && num.startsWith('55')) return num;
   if (num.length === 11) return '55' + num;
-  if (num.length === 10) return '55' + num.slice(0, 2) + '9' + num.slice(2);
+  if (!num.startsWith('55')) return '55' + num;
+
   return num;
 }
 
-// 🔐 Carrega dados do .env com nomes amigáveis
-const INSTANCIA_ID = process.env.ID_INSTANCE;
-const TOKEN = process.env.CLIENT_TOKEN;
-const CLIENT_TOKEN = process.env.TOKEN_DA_INSTANCIA;
+async function enviarMensagemSimples(numero, texto) {
+  console.log('🧪 [zapiService] enviarMensagemSimples foi chamado!');
+  console.log('🧾 Dados recebidos para envio:', { numero, texto });
 
-const API_BASE = `https://api.z-api.io/instances/${INSTANCIA_ID}/token/${TOKEN}`;
+  if (!texto || !numero) {
+    console.warn('⚠️ Texto ou número não fornecido.');
+    return { error: true, message: 'Texto ou número não fornecido' };
+  }
 
-// 📨 Envia mensagem de texto simples
-async function enviarMensagemSimples(numero, mensagem) {
-  const telefone = formatarNumero(numero);
+  const instanceId = process.env.ID_INSTANCE;
+  const clientToken = process.env.TOKEN_DA_INSTANCIA;
+  const token = process.env.CLIENT_TOKEN;
 
-  const payload = {
-    phone: telefone,
-    message: mensagem
-  };
+  if (!instanceId || !token || !clientToken) {
+    return { error: true, message: 'Variáveis de ambiente ausentes!' };
+  }
 
-  const headers = {
-    'Content-Type': 'application/json',
-    'Client-Token': CLIENT_TOKEN
-  };
+  const url = `https://api.z-api.io/instances/${instanceId}/token/${token}/send-text`;
+  const phone = formatarNumero(numero);
 
-  const url = `${API_BASE}/send-text`;
-
-  console.log('📦 Enviando mensagem simples...');
-  console.log('🌐 URL:', url);
-  console.log('📨 Payload:', payload);
-  console.log('🛡️ Headers:', headers);
+  console.log(`📨 Tentando enviar mensagem para: ${phone} | Mensagem: "${texto}"`);
 
   try {
-    const resposta = await axios.post(url, payload, { headers });
-    console.log(`✅ Mensagem enviada com sucesso para ${telefone}`);
-    return resposta.data;
+    const response = await axios.post(url, {
+      phone,
+      message: texto,
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Client-Token': clientToken
+      }
+    });
+
+    console.log(`✅ Resposta Z-API para ${phone}:`, response.data);
+
+    if (response.data.error) {
+      console.error('❌ Erro Z-API:', response.data.message);
+      return { error: true, message: response.data.message };
+    }
+
+    return response.data;
+
   } catch (err) {
-    console.error('❌ Erro ao enviar mensagem:', err.response?.data || err.message);
-    return { error: true, message: err.response?.data || err.message };
+    console.error('❌ Erro ao enviar mensagem simples:', err.response?.data || err.message);
+    throw err;
   }
 }
 
-// 🔘 Envia mensagem com botões
 async function enviarMensagemComBotoes(numero, botoes) {
-  const telefone = formatarNumero(numero);
+  const instanceId = process.env.ID_INSTANCE;
+  const clientToken = process.env.TOKEN_DA_INSTANCIA;
+  const token = process.env.CLIENT_TOKEN;
 
-  const payload = {
-    phone: telefone,
-    message: botoes.message,
-    listButtons: botoes.listButtons
-  };
+  if (!instanceId || !token || !clientToken) {
+    return { error: true, message: 'Variáveis de ambiente ausentes!' };
+  }
 
-  const headers = {
-    'Content-Type': 'application/json',
-    'Client-Token': CLIENT_TOKEN
-  };
+  const url = `https://api.z-api.io/instances/${instanceId}/token/${token}/send-button-message`;
+  const phone = formatarNumero(numero);
 
-  const url = `${API_BASE}/send-button-message`;
-
-  console.log('📦 Enviando mensagem com botões...');
-  console.log('🌐 URL:', url);
-  console.log('📨 Payload:', payload);
-  console.log('🛡️ Headers:', headers);
+  console.log(`📨 Tentando enviar mensagem com botões para: ${phone}`);
 
   try {
-    const resposta = await axios.post(url, payload, { headers });
-    console.log(`✅ Mensagem com botões enviada para ${telefone}`);
-    return resposta.data;
+    const response = await axios.post(url, {
+      phone,
+      message: botoes.message,
+      listButtons: botoes.listButtons,
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Client-Token': clientToken
+      }
+    });
+
+    console.log(`✅ Resposta Z-API para ${phone} (botões):`, response.data);
+
+    if (response.data.error) {
+      console.error('❌ Erro Z-API:', response.data.message);
+      return { error: true, message: response.data.message };
+    }
+
+    return response.data;
+
   } catch (err) {
-    console.error('❌ Erro ao enviar botões:', err.response?.data || err.message);
-    return { error: true, message: err.response?.data || err.message };
+    console.error('❌ Erro ao enviar mensagem com botões:', err.response?.data || err.message);
+    throw err;
   }
 }
 
 module.exports = {
   enviarMensagemSimples,
   enviarMensagemComBotoes,
-  formatarNumero
+  formatarNumero,
 };
