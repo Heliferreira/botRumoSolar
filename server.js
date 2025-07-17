@@ -21,13 +21,17 @@ app.use(routes);
 
 app.get('/', async (req, res) => {
   try {
-    const leads = await getAllLeads();
-    res.render('dashboard', { leads });
+    const status = req.query.status || '';
+    const leads = await getAllLeads(status);
+    res.render('dashboard', { leads, filtroStatus: status });
   } catch (error) {
     console.error('❌ Erro no dashboard:', error);
     res.status(500).send('Erro ao carregar os leads.');
   }
 });
+
+
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
