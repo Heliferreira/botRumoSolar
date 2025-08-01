@@ -1,34 +1,32 @@
-// src/vendedorService.js
-const fs = require('fs');
-const path = require('path');
+const { pool } = require('./db');
 
-const vendedores = [
- 
-  { nome: 'Heli Ferreira', numero: '5541987285450' },// substitua pelo seu número real
-  { nome: 'Ana', numero: '5511988880002' },
-  { nome: 'Carlos', numero: '5511977770003' },
-];
-
-const statePath = path.join(__dirname, 'ultimoVendedor.json');
-
-function carregarEstado() {
-  try {
-    const raw = fs.readFileSync(statePath);
-    return JSON.parse(raw);
-  } catch (err) {
-    return { ultimoIndex: -1 };
-  }
+// Buscar índice atual da fila
+async function carregarEstado() {
+  const res = await pool.query("SELECT valor FROM estado_fila WHERE chave = 'ultimoIndex'");
+  return res.rows[0]?.valor ?? -1;
 }
 
-function salvarEstado(index) {
-  fs.writeFileSync(statePath, JSON.stringify({ ultimoIndex: index }));
+// Atualizar índice da fila
+async function salvarEstado(novoIndex) {
+  await pool.query(`
+    INSERT INTO estado_fila (chave, valor)
+    VALUES ('ultimoIndex', $1)
+    ON CONFLICT (chave) DO UPDATE SET valor = $1
+  `, [novoIndex]);
 }
 
+// Buscar o próximo consultor ativo da fila
 async function getProximoVendedor() {
-  const estado = carregarEstado();
-  const proximoIndex = (estado.ultimoIndex + 1) % vendedores.length;
-  salvarEstado(proximoIndex);
-  return vendedores[proximoIndex];
+  const consultoresAtivos = await pool.query("SELECT * FROM consultores WHERE ativo = true ORDER BY id");
+  const lista = consultoresAtivos.rows;
+
+  if (lista.length === 0) throw new Error('Nenhum consultor ativo disponível.');
+
+  const ultimoIndex = await carregarEstado();
+  const proximoIndex = (ultimoIndex + 1) % lista.length;
+
+  await salvarEstado(proximoIndex);
+  return lista[proximoIndex];
 }
 
 module.exports = {

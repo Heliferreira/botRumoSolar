@@ -10,19 +10,16 @@ async function botWebhook(req, res) {
 
     const body = req.body;
 
-    // 🔐 Checagem de variáveis de ambiente
     if (!process.env.CLIENT_TOKEN || !process.env.ID_INSTANCE) {
       console.error('❌ Variáveis de ambiente ausentes');
       return res.sendStatus(500);
     }
 
-    // ✅ Verificação do tipo de mensagem recebida
     if (body.type !== 'ReceivedCallback') {
       console.warn('⚠️ Tipo de mensagem ignorado:', body.type);
       return res.sendStatus(200);
     }
 
-    // ✅ Número do remetente
     const remetente = body.phone;
     if (!remetente) {
       console.error('❌ Número do remetente ausente');
@@ -30,8 +27,8 @@ async function botWebhook(req, res) {
     }
 
     numeroFinal = formatarNumero(remetente);
+    const nomeCliente = body.pushName || 'Não identificado';
 
-    // ✅ Extração da mensagem
     let texto = '';
     let tipoEntrada = '';
 
@@ -49,7 +46,7 @@ async function botWebhook(req, res) {
     texto = texto.toLowerCase().trim();
     console.log('💬 Entrada:', texto, '| Tipo:', tipoEntrada);
 
-    await processarFluxo(numeroFinal, texto, tipoEntrada);
+    await processarFluxo(numeroFinal, texto, tipoEntrada, nomeCliente);
     res.sendStatus(200);
 
   } catch (err) {

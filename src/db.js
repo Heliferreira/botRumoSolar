@@ -1,46 +1,68 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+// db.js (PostgreSQL)
+const { Pool } = require('pg');
 
-const dbPath = path.join(__dirname, 'leads.db');
-const db = new sqlite3.Database(dbPath);
+// 👉 configure aqui os dados do seu banco PostgreSQL
+const pool = new Pool({
+  user: 'seu_usuario',
+  host: 'localhost',        // ou IP do VPS
+  database: 'seu_banco',
+  password: 'sua_senha',
+  port: 5432,
+});
 
-// Criação da tabela com campos de CRM
-db.run(`
-  CREATE TABLE IF NOT EXISTS leads (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    numero TEXT,
-    servico TEXT,
-    valorConta INTEGER,
-    vendedor TEXT,
-    status TEXT,
-    observacoes TEXT,
-    data TEXT
-  )
-`);
+// 🔧 Criação da tabela (roda automaticamente quando o projeto inicia)
+async function criarTabela() {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS leads (
+        id SERIAL PRIMARY KEY,
+        numero TEXT,
+        servico TEXT,
+        valorConta INTEGER,
+        vendedor TEXT,
+        status TEXT,
+        observacoes TEXT,
+        data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    console.log('✅ Tabela leads verificada/criada com sucesso');
+  } catch (err) {
+    console.error('❌ Erro ao criar tabela leads:', err.message);
+  }
+}
+criarTabela();
 
-// Inserção de lead
-function salvarLead({ numero, servico, valorConta, vendedor, status = 'novo', observacoes = '' }) {
-  return new Promise((resolve, reject) => {
-    const sql = `
-      INSERT INTO leads (numero, servico, valorConta, vendedor, status, observacoes, data)
-      VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
-    `;
-    db.run(sql, [numero, servico, valorConta, vendedor, status, observacoes], function (err) {
-      if (err) reject(err);
-      else resolve(this.lastID);
-    });
-  });
+// 📥 Inserção de lead
+async function salvarLead({ numero, servico, valorConta, vendedor, status = 'novo', observacoes = '' }) {
+  try {
+    await pool.query(
+      `INSERT INTO leads (numero, servico, valorConta, vendedor, status, observacoes)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [numero, servico, valorConta, vendedor, status, observacoes]
+    );
+    console.log('✅ Lead salvo no PostgreSQL');
+  } catch (err) {
+    console.error('❌ Erro ao salvar lead:', err.message);
+    throw err;
+  }
 }
 
-// Buscar todos os leads
-function getAllLeads() {
-  return new Promise((resolve, reject) => {
-    db.all('SELECT * FROM leads ORDER BY data DESC', [], (err, rows) => {
-      if (err) reject(err);
-      else resolve(rows);
-    });
-  });
+// 📤 Buscar todos os leads
+async function getAllLeads() {
+  try {
+    const result = await pool.query('SELECT * FROM leads ORDER BY data DESC');
+    return result.rows;
+  } catch (err) {
+    console.error('❌ Erro ao buscar leads:', err.message);
+    throw err;
+  }
 }
+
+module.exports = {
+  salvarLead,
+  getAllLeads
+};
+
 
 module.exports = {
   salvarLead,

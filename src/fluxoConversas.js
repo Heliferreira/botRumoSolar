@@ -5,9 +5,9 @@ const { salvarLead } = require('./db');
 const contexto = {};
 console.log('✅ fluxoConversas.js carregado');
 
-async function processarFluxo(numero, mensagem, tipo) {
+async function processarFluxo(numero, mensagem, tipo, nome = 'Não identificado') {
   try {
-    console.log('⚙️ Processando fluxo:', { numero, mensagem, tipo });
+    console.log('⚙️ Processando fluxo:', { numero, mensagem, tipo, nome });
 
     const estado = contexto[numero] || { etapa: 'inicio' };
 
@@ -39,8 +39,8 @@ async function processarFluxo(numero, mensagem, tipo) {
           etapa: 'confirmar_interesse',
           servico: estado.servico,
           valor,
+          nome
         };
-        console.log('🧪 Enviando mensagem de economia solar para:', numero);
         await enviarMensagemSimples(
           numero,
           `💡 Com R$${valor}, você pode economizar até *R$${economia}* por mês!\nDeseja falar com um especialista?\nDigite *sim* ou *voltar*.`
@@ -55,16 +55,19 @@ async function processarFluxo(numero, mensagem, tipo) {
     if (estado.etapa === 'confirmar_interesse' && mensagem.includes('sim')) {
       const vendedor = await getProximoVendedor();
       await salvarLead({
+        nome,
         numero,
         servico: estado.servico,
         valorConta: estado.valor,
         vendedor: vendedor.nome,
         status: 'novo',
       });
+
       await enviarMensagemSimples(
         vendedor.numero,
-        `📥 Novo lead de *${estado.servico}*\nCliente: https://wa.me/${numero}\nValor: R$${estado.valor}`
+        `📥 Novo lead de *${estado.servico}*\nCliente: ${nome} - https://wa.me/${numero}\nValor: R$${estado.valor}`
       );
+
       contexto[numero] = { etapa: 'finalizado' };
       await enviarMensagemSimples(numero, '✅ Um especialista vai te chamar!');
       return;
