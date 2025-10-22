@@ -1,39 +1,27 @@
-const path = require('path');
-
-require('dotenv').config(); // sem path custom
-console.log("🔍 Variáveis de ambiente carregadas:");
-console.log("ID_INSTANCE:", process.env.ID_INSTANCE);
-console.log("CLIENT_TOKEN:", process.env.CLIENT_TOKEN);
-
-
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
-const routes = require('./src/routes');
-const { getAllLeads } = require('./src/db');
+const cors = require('cors');
+const botWebhook = require('./bot'); // webhook principal
 
 const app = express();
+const PORT = process.env.PORT || 3001;
 
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'src', 'views'));
-app.use(express.static(path.join(__dirname, 'public')));
+// Middlewares
+app.use(cors());
 app.use(bodyParser.json());
-app.use(routes);
+app.use(bodyParser.urlencoded({ extended: true }));
 
-app.get('/', async (req, res) => {
-  try {
-    const status = req.query.status || '';
-    const leads = await getAllLeads(status);
-    res.render('dashboard', { leads, filtroStatus: status });
-  } catch (error) {
-    console.error('❌ Erro no dashboard:', error);
-    res.status(500).send('Erro ao carregar os leads.');
-  }
+// Rota principal do webhook (usada pela Z-API)
+app.post('/webhook', botWebhook);
+
+// Rota de teste simples
+app.get('/', (req, res) => {
+  res.send('✅ Bot Rumo Solar rodando com sucesso!');
 });
 
-
-
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
+// Inicializa servidor
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor rodando na porta ${PORT}`);
 });
+

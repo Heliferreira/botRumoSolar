@@ -1,34 +1,66 @@
 const { pool } = require('./db');
 
-// Buscar índice atual da fila
-async function carregarEstado() {
-  const res = await pool.query("SELECT valor FROM estado_fila WHERE chave = 'ultimoIndex'");
-  return res.rows[0]?.valor ?? -1;
+// 🧩 Função para pegar a lista de vendedores ativos
+async function getVendedoresAtivos() {
+  try {
+    const res = await pool.query('SELECT * FROM consultores WHERE ativo = true ORDER BY id ASC');
+    console.log("🧪 Vendedores ativos lidos do banco:", res.rows);
+    return res.rows;
+  } catch (err) {
+    console.error("❌ Erro ao buscar vendedores ativos:", err.message);
+    return [];
+  }
 }
 
-// Atualizar índice da fila
-async function salvarEstado(novoIndex) {
-  await pool.query(`
-    INSERT INTO estado_fila (chave, valor)
-    VALUES ('ultimoIndex', $1)
-    ON CONFLICT (chave) DO UPDATE SET valor = $1
-  `, [novoIndex]);
+// 🔹 Função para obter o índice atual da fila
+async function getIndiceFila() {
+  const res = await pool.query("SELECT valor FROM estado_fila WHERE chave = 'indice_fila'");
+console.log('📋 Resultado da query consultores:', res.rows);
+  if (res.rows.length === 0) {
+    console.log("⚙️ Nenhum índice de fila encontrado. Criando valor inicial (0)...");
+    await pool.query("INSERT INTO estado_fila (chave, valor) VALUES ('indice_fila', 0)");
+    return 0;
+  }
+  return res.rows[0].valor;
 }
 
-// Buscar o próximo consultor ativo da fila
+// 🔹 Função para atualizar o índice da fila
+async function setIndiceFila(novoIndice) {
+  await pool.query("UPDATE estado_fila SET valor = $1 WHERE chave = 'indice_fila'", [novoIndice]);
+}
+
+// 🔹 Função principal: retorna o próximo vendedor ativo
 async function getProximoVendedor() {
-  const consultoresAtivos = await pool.query("SELECT * FROM consultores WHERE ativo = true ORDER BY id");
-  const lista = consultoresAtivos.rows;
+  const vendedores = await getVendedoresAtivos();
 
-  if (lista.length === 0) throw new Error('Nenhum consultor ativo disponível.');
+  // Caso não haja vendedores ativos
+  if (vendedores.length === 0) {
+    console.log("⚠️ Nenhum vendedor ativo encontrado no momento!");
+    return null; // Evita erro fatal
+  }
 
-  const ultimoIndex = await carregarEstado();
-  const proximoIndex = (ultimoIndex + 1) % lista.length;
+  // Caso haja apenas um vendedor ativo
+  if (vendedores.length === 1) {
+    console.log(`✅ Apenas um vendedor ativo (${vendedores[0].nome}). Retornando ele diretamente.`);
+    return vendedores[0];
+  }
 
-  await salvarEstado(proximoIndex);
-  return lista[proximoIndex];
+  // Caso haja mais de um ativo → segue a lógica da fila
+  let indiceAtual = await getIndiceFila();
+  const vendedor = vendedores[indiceAtual % vendedores.length];
+
+  console.log(`🎯 Vendedor selecionado: ${vendedor.nome} (índice ${indiceAtual})`);
+
+  // Atualiza índice para o próximo da fila
+  const novoIndice = (indiceAtual + 1) % vendedores.length;
+  await setIndiceFila(novoIndice);
+
+  console.log(`🔄 Fila atualizada. Próximo índice será ${novoIndice}.`);
+
+  return vendedor;
 }
 
 module.exports = {
-  getProximoVendedor
+  getVendedoresAtivos,
+  getProximoVendedor,
 };
